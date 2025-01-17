@@ -1,51 +1,24 @@
-# First Level Heading
+# UAV Ground Control
 
-Paragraph.
+**UAV Ground Control** is a ground control software designed for controlling and monitoring Unmanned Aerial Vehicles (UAVs). This software allows users to track UAVs, receive telemetry data, and perform tasks like mapping and monitoring in real-time.
 
-## Second Level Heading
+## Features
 
-Paragraph.
+- **Real-time Telemetry Data**: Display telemetry data coming from the UAV in real time.
+- **Map Integration**: View the UAV's position on a map.
+- **Multiple Language Support**: The application can be used in multiple languages (Turkish, English, German, etc.).
+- **Logging and Error Management**: Detailed logging of application activities and errors.
+- **User-Friendly Interface**: Provides an intuitive graphical user interface for users to interact with.
 
-- bullet
-+ other bullet
-* another bullet
-    * child bullet
+## Requirements
 
-1. ordered
-2. next ordered
+- **Qt Framework**: This project is developed using the Qt framework, which provides cross-platform support.
+- **C++ Compiler**: Written in C++ and requires a compatible C++ compiler.
 
-### Third Level Heading
+## Installation
 
-Some *italic* and **bold** text and `inline code`.
+To set up the project, follow these steps:
 
-An empty line starts a new paragraph.
-
-Use two spaces at the end  
-to force a line break.
-
-A horizontal ruler follows:
-
----
-
-Add links inline like [this link to the Qt homepage](https://www.qt.io),
-or with a reference like [this other link to the Qt homepage][1].
-
-    Add code blocks with
-    four spaces at the front.
-
-> A blockquote
-> starts with >
->
-> and has the same paragraph rules as normal text.
-
-First Level Heading in Alternate Style
-======================================
-
-Paragraph.
-
-Second Level Heading in Alternate Style
----------------------------------------
-
-Paragraph.
-
-[1]: https://www.qt.io
+1. **Clone the Repository:**
+   ```bash
+   git clone https://github.com/ismaildosdemir/UAV_Ground_Control.git
