@@ -1,0 +1,20 @@
+<RCC>
+    <qresource prefix="/images">
+        <file>images/uav.svg</file>
+    </qresource>
+    <qresource prefix="/translations">
+        <file>translations/UAV_Ground_Control_tr_TR.ts</file>
+        <file>translations/UAV_Ground_Control_en_US.ts</file>
+        <file>translations/UAV_Ground_Control_ru_RU.ts</file>
+        <file>translations/UAV_Ground_Control_zh_CN.ts</file>
+        <file>translations/UAV_Ground_Control_az_AZ.ts</file>
+        <file>translations/UAV_Ground_Control_de_DE.ts</file>
+        <file>translations/UAV_Ground_Control_fr_FR.ts</file>
+    </qresource>
+    <qresource prefix="/maps">
+        <file>maps/GeneralMap.qml</file>
+        <file>maps/map.html</file>
+        <file>maps/map.qml</file>
+        <file>maps/QmlMap.qml</file>
+    </qresource>
+</RCC>
