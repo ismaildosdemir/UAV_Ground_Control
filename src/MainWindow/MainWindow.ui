@@ -58,7 +58,7 @@ border-radius: 15;</string>
     </property>
     <property name="source">
      <url>
-      <string>qrc:/map.qml</string>
+      <string>qrc:/maps/maps/map.qml</string>
      </url>
     </property>
    </widget>
@@ -611,7 +611,7 @@ border-radius: 15;</string>
 </string>
    </property>
    <property name="currentIndex">
-    <number>2</number>
+    <number>3</number>
    </property>
    <widget class="QWidget" name="statusTab">
     <attribute name="title">

@@ -12,18 +12,22 @@ CONFIG += c++17
 
 # Kaynak dosyaları
 SOURCES += \
+    src/Camera/cameramanager.cpp \
     src/main.cpp \
     src/MainWindow/MainWindow.cpp \
     src/UAV/UAVManager.cpp \
     src/Telemetry/TelemetryHandler.cpp \
-    src/Utils/Logger.cpp
+    src/Utils/Logger.cpp \
+    src/Camera\CameraManager.cpp
 
 # Header dosyaları
 HEADERS += \
+    src/Camera/cameramanager.h \
     src/MainWindow/MainWindow.h \
     src/UAV/UAVManager.h \
     src/Telemetry/TelemetryHandler.h \
     src/Utils/Logger.h
+    src/Camera\CameraManager.h
 
 # UI dosyaları
 FORMS += \
