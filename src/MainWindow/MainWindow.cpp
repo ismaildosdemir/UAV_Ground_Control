@@ -38,6 +38,14 @@ MainWindow::MainWindow(QWidget *parent)
 
 
 
+    // Saati hemen göster
+    showTime();
+
+    // QTimer ile saati her saniye güncelle
+    QTimer *timer = new QTimer(this);
+    connect(timer, &QTimer::timeout, this, &MainWindow::showTime);
+    timer->start(1000); // 1000 ms = 1 saniye
+
 
 
 }
