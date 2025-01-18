@@ -7,7 +7,7 @@ Rectangle {
     width: 800
     height: 600
 
-    property string thunderforestApiKey: "d0307fa0fade48ef9a038f5ca05547a6" // Thunderforest API anahtarını buraya ekleyin
+    property string thunderforestApiKey: "YOUR_API_KEY" // Thunderforest API anahtarını buraya ekleyin
 
     Plugin {
         id: osmPlugin
