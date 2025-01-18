@@ -1,6 +1,7 @@
 <RCC>
     <qresource prefix="/images">
         <file>images/uav.svg</file>
+        <file>images/DisconnectCamera.png</file>
     </qresource>
     <qresource prefix="/translations">
         <file>translations/UAV_Ground_Control_tr_TR.ts</file>

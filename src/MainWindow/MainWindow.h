@@ -1,9 +1,12 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "src/Camera/CameraManager.h"
 #include "src/UAV/UAVManager.h"
 #include "src/Utils/Logger.h"
 #include <QMainWindow>
+#include <QVideoWidget>
+#include <QCamera>
 
 namespace Ui {
 class MainWindow;
@@ -16,6 +19,7 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+    QMediaCaptureSession* getCaptureSession() const { return captureSession; }
 
 private:
     Ui::MainWindow *ui;
@@ -27,6 +31,12 @@ private:
     Logger *logger;  // Logger sınıfının bir örneği
     void updateTelemetryData();
     void onUAVConnected();
+    CameraManager *cameraManager;
+    void cameraConnectPushButton_clicked();
+    QVideoWidget *videoWidget;
+    QMediaCaptureSession* captureSession;
+    QCamera *camera;
+    MainWindow* mainWindowPointer; // MainWindow işaretçisi
 
 };
 

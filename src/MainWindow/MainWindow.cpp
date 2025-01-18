@@ -2,16 +2,20 @@
 #include "ui_MainWindow.h"
 #include <QSerialPortInfo>
 #include <QDir>
-#include <QCamera>
-#include <QCameraDevice>
 #include <QMediaDevices>
 #include <QTimer>
+#include <QMediaCaptureSession>
+#include <QVideoSink>
+#include "qboxlayout.h"
 
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent),
-    ui(new Ui::MainWindow),
-    uavManager(new UAVManager(this))
+    : QMainWindow(parent)
+    , ui(new Ui::MainWindow)
+    , uavManager(new UAVManager(this))
+    , cameraManager(new CameraManager(this))
+    , videoWidget(new QVideoWidget(this))
+    ,captureSession(new QMediaCaptureSession(this))
 {
     // UI öğelerini başlat
     ui->setupUi(this);
@@ -36,17 +40,18 @@ MainWindow::MainWindow(QWidget *parent)
     // });
 
 
+    // UI'deki videoFrame'i ve videoWidget'ı hazırlayın
+    QVBoxLayout *layout = new QVBoxLayout(ui->videoFrame);
+    layout->addWidget(videoWidget);
+    ui->videoFrame->setLayout(layout);
 
 
     // Saati hemen göster
     showTime();
-
     // QTimer ile saati her saniye güncelle
     QTimer *timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &MainWindow::showTime);
     timer->start(1000); // 1000 ms = 1 saniye
-
-
 
 }
 
@@ -91,6 +96,41 @@ void MainWindow::setupConnections()
 
     connect(uavManager, &UAVManager::connected, this, &MainWindow::onUAVConnected);
 
+
+
+
+    connect(ui->cameraConnectPushButton, &QPushButton::clicked, this, &MainWindow::cameraConnectPushButton_clicked);
+
+
+
+
+    connect(cameraManager, &CameraManager::cameraStarted, this, [this](const QString &cameraName) {
+        ui->cameraConnectPushButton->setText("Disconnect Camera"); // Buton metnini güncelle
+
+        ui->videoFrame->setStyleSheet(
+            "QWidget {"
+            "    background-color: #4b4b4b;"  // Arka plan rengi
+            "    background-image: url(:/images/images/DisconnectCamera.png);"
+            "    background-repeat: no-repeat;"  // Resmin tekrarlanmasını engelle
+            "    background-position: center;"  // Resmi merkeze yerleştir"
+            "}"
+            );
+
+
+        qDebug() << "Kamera açıldı: " << cameraName;
+    });
+
+    connect(cameraManager, &CameraManager::cameraStopped, this, [this]() {
+        ui->cameraConnectPushButton->setText("Connect Camera"); // Buton metnini güncelle
+        qDebug() << "Kamera kapandı: ";
+    });
+
+
+
+
+
+
+
     //Logger::instance().log("Signal-slot bağlantıları ayarlandı.");
 }
 
@@ -122,17 +162,11 @@ void MainWindow::listSerialPortsAndConnections() {
 
 
 
-
-
-    ui->cameraComboBox->clear();
-    const auto cameraDevices = QMediaDevices::videoInputs();
-    foreach (const QCameraDevice &cameraDevice, cameraDevices) {
-        ui->cameraComboBox->addItem(cameraDevice.description());
-    }
+    // Kameraları combobox'a yükleme
+    QStringList cameras = cameraManager->availableCameras();
+    ui->cameraComboBox->addItems(cameras);
 
 }
-
-
 
 void MainWindow::updateTelemetryData() {
 
@@ -155,7 +189,6 @@ void MainWindow::updateTelemetryData() {
     ui->speedLabel->setText(QString::number(telemetryHandler->getTotalSpeed(), 'f', 2) + " m/s");
 }
 
-
 void MainWindow::onUAVConnected() {
 
 
@@ -173,6 +206,24 @@ void MainWindow::onUAVConnected() {
     qDebug() << "TelemetryHandler sinyali updateTelemetryData fonksiyonuna bağlandı.";
 }
 
+void MainWindow::cameraConnectPushButton_clicked()
+{
+
+// camera is connect? if/else
+    if (cameraManager->isCameraConnected()) {
+    cameraManager->disconnectCamera();
+
+    } else {
+        QString cameraName = ui->cameraComboBox->currentText();
+        cameraManager->connectToCamera(cameraName);
+
+        // UAVManager'dan captureSession alın
+        captureSession = cameraManager->getCaptureSession(); // UAVManager'dan captureSession alın
+
+        // CaptureSession'ı videoWidget ile ilişkilendir
+        captureSession->setVideoOutput(videoWidget);
+    }
+}
 
 void MainWindow::showTime(){
     QDateTime currentDateTime = QDateTime::currentDateTime();
