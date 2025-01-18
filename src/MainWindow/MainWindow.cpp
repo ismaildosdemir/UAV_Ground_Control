@@ -44,6 +44,7 @@ MainWindow::MainWindow(QWidget *parent)
     QVBoxLayout *layout = new QVBoxLayout(ui->videoFrame);
     layout->addWidget(videoWidget);
     ui->videoFrame->setLayout(layout);
+    videoWidget->hide();   // Video alanını gizle
 
 
     // Saati hemen göster
@@ -106,15 +107,8 @@ void MainWindow::setupConnections()
 
     connect(cameraManager, &CameraManager::cameraStarted, this, [this](const QString &cameraName) {
         ui->cameraConnectPushButton->setText("Disconnect Camera"); // Buton metnini güncelle
+        videoWidget->show();   // Yeniden göster
 
-        ui->videoFrame->setStyleSheet(
-            "QWidget {"
-            "    background-color: #4b4b4b;"  // Arka plan rengi
-            "    background-image: url(:/images/images/DisconnectCamera.png);"
-            "    background-repeat: no-repeat;"  // Resmin tekrarlanmasını engelle
-            "    background-position: center;"  // Resmi merkeze yerleştir"
-            "}"
-            );
 
 
         qDebug() << "Kamera açıldı: " << cameraName;
@@ -122,6 +116,12 @@ void MainWindow::setupConnections()
 
     connect(cameraManager, &CameraManager::cameraStopped, this, [this]() {
         ui->cameraConnectPushButton->setText("Connect Camera"); // Buton metnini güncelle
+
+
+
+        videoWidget->hide();   // Video alanını gizle
+
+
         qDebug() << "Kamera kapandı: ";
     });
 

@@ -73,8 +73,12 @@ border-radius: 15;</string>
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true">background-color:black;
-border-radius: 15;</string>
+    <string notr="true">background-color: #4b4b4b;
+background-image: url(:/images/images/DisconnectCamera.png);
+background-repeat: no-repeat;
+ background-position: center;
+border: 2px solid black;
+border-radius: 20px;</string>
    </property>
    <property name="frameShape">
     <enum>QFrame::Shape::Box</enum>
