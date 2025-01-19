@@ -21,7 +21,7 @@ public:
     mavsdk::Telemetry::Position getPosition() const;
     mavsdk::Telemetry::EulerAngle getAttitude() const;
     mavsdk::Telemetry::FixedwingMetrics getFixedwingMetrics() const;
-    mavsdk::Telemetry::FlightMode getFlightMode() const;
+    QString getFlightMode() const;
     mavsdk::Telemetry::GpsInfo getGpsInfo() const;
     mavsdk::Telemetry::Battery getBattery() const;
     bool isArmed() const;
@@ -39,7 +39,7 @@ private:
     mavsdk::Telemetry::Position position;
     mavsdk::Telemetry::EulerAngle attitude;
     mavsdk::Telemetry::FixedwingMetrics fixedwingMetrics;
-    mavsdk::Telemetry::FlightMode flightMode;
+    QString flightMode;
     mavsdk::Telemetry::GpsInfo gpsInfo;
     mavsdk::Telemetry::Battery battery;
     bool armed = false;
@@ -53,7 +53,10 @@ private:
     void subscribeGpsInfo();
     void subscribeBattery();
     void subscribeArmed();
-    void calculateTotalSpeed(const mavsdk::Telemetry::VelocityNed &velocityNed);
+    void subscribeTotalSpeed();
+
+    QString flightModeToString(mavsdk::Telemetry::FlightMode mode);
+
 };
 
 #endif // TELEMETRYHANDLER_H

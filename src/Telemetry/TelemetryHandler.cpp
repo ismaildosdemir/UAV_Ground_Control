@@ -24,6 +24,7 @@ void TelemetryHandler::start() {
     subscribeGpsInfo();
     subscribeBattery();
     subscribeArmed();
+    subscribeTotalSpeed();
 }
 
 // Getter fonksiyonları
@@ -39,7 +40,7 @@ mavsdk::Telemetry::FixedwingMetrics TelemetryHandler::getFixedwingMetrics() cons
     return fixedwingMetrics;
 }
 
-mavsdk::Telemetry::FlightMode TelemetryHandler::getFlightMode() const {
+QString TelemetryHandler::getFlightMode() const {
     return flightMode;
 }
 
@@ -63,6 +64,8 @@ double TelemetryHandler::getTotalSpeed() const {
 void TelemetryHandler::subscribePosition() {
     telemetry->subscribe_position([this](const mavsdk::Telemetry::Position &pos) {
         position = pos;
+        qDebug() << "Position telemetry updated!";
+
         emit telemetryDataUpdated();
     });
 }
@@ -83,7 +86,7 @@ void TelemetryHandler::subscribeFixedwingMetrics() {
 
 void TelemetryHandler::subscribeFlightMode() {
     telemetry->subscribe_flight_mode([this](mavsdk::Telemetry::FlightMode mode) {
-        flightMode = mode;
+        flightMode = flightModeToString(mode);
         emit telemetryDataUpdated();
     });
 }
@@ -109,11 +112,48 @@ void TelemetryHandler::subscribeArmed() {
     });
 }
 
-void TelemetryHandler::calculateTotalSpeed(const mavsdk::Telemetry::VelocityNed &velocityNed) {
-    totalSpeed = std::sqrt(
-        velocityNed.north_m_s * velocityNed.north_m_s +
-        velocityNed.east_m_s * velocityNed.east_m_s +
-        velocityNed.down_m_s * velocityNed.down_m_s
-        );
-    emit telemetryDataUpdated();
+void TelemetryHandler::subscribeTotalSpeed() {
+    telemetry->subscribe_velocity_ned([this](const mavsdk::Telemetry::VelocityNed &velocityNed) {
+        totalSpeed = std::sqrt(
+            velocityNed.north_m_s * velocityNed.north_m_s +
+            velocityNed.east_m_s * velocityNed.east_m_s +
+            velocityNed.down_m_s * velocityNed.down_m_s
+            );
+        emit telemetryDataUpdated();
+    });
+}
+
+
+QString TelemetryHandler::flightModeToString(mavsdk::Telemetry::FlightMode mode) {
+    switch (mode) {
+    case mavsdk::Telemetry::FlightMode::Unknown: return "Unknown";
+    case mavsdk::Telemetry::FlightMode::Ready: return "Ready";
+    case mavsdk::Telemetry::FlightMode::Takeoff: return "Takeoff";
+    case mavsdk::Telemetry::FlightMode::Hold: return "Hold";
+    case mavsdk::Telemetry::FlightMode::Mission: return "Mission";
+    case mavsdk::Telemetry::FlightMode::ReturnToLaunch: return "Return to Launch";
+    case mavsdk::Telemetry::FlightMode::Land: return "Land";
+    case mavsdk::Telemetry::FlightMode::Offboard: return "Offboard";
+    case mavsdk::Telemetry::FlightMode::FollowMe: return "Follow Me";
+    case mavsdk::Telemetry::FlightMode::Manual: return "Manual";
+    case mavsdk::Telemetry::FlightMode::Altctl: return "Altitude Control";
+    case mavsdk::Telemetry::FlightMode::Posctl: return "Position Control";
+    case mavsdk::Telemetry::FlightMode::Acro: return "Acro";
+    case mavsdk::Telemetry::FlightMode::Stabilized: return "Stabilized";
+    case mavsdk::Telemetry::FlightMode::Rattitude: return "Rattitude";
+    default: return "Unknown Flight Mode";
+    }
+}
+
+QString gpsFixTypeToString(const mavsdk::Telemetry::GpsInfo& value) {
+    switch(value.fix_type) {
+    case mavsdk::Telemetry::FixType::NoGps: return "NoGps";
+    case mavsdk::Telemetry::FixType::NoFix: return "NoFix";
+    case mavsdk::Telemetry::FixType::Fix2D: return "Fix2D";
+    case mavsdk::Telemetry::FixType::Fix3D: return "Fix3D";
+    case mavsdk::Telemetry::FixType::FixDgps: return "FixDgps";
+    case mavsdk::Telemetry::FixType::RtkFloat: return "RtkFloat";
+    case mavsdk::Telemetry::FixType::RtkFixed: return "RtkFixed";
+    default: return "Unknown";
+    }
 }

@@ -7,7 +7,7 @@ Rectangle {
     width: 800
     height: 600
 
-    property var uavCoordinate: QtPositioning.coordinate(37.7749, -122.4194) // UAV başlangıç konumu
+    property var uavCoordinate: QtPositioning.coordinate(39.925025, 32.836943) // UAV başlangıç konumu
 
 
 
@@ -25,7 +25,7 @@ Rectangle {
 
 
         center: uavCoordinate
-        zoomLevel: 10
+        zoomLevel: 18
 
         // UAV'ın konumunu göstermek için bir işaretçi ekleyin
         MapQuickItem {
@@ -44,7 +44,7 @@ Rectangle {
         WheelHandler {
             id: wheelHandler
             target: map
-            onWheel: {
+            onWheel: function(event) {
                 // event.angleDelta.y tekerleğin yukarı/aşağı hareketini belirtir
                 if (event.angleDelta.y > 0) {
                     map.zoomLevel += 1; // Zoom in
@@ -52,7 +52,7 @@ Rectangle {
                     map.zoomLevel -= 1; // Zoom out
                 }
                 // zoomLevel'in minimum ve maksimum değerlerini ayarlayabilirsiniz
-                map.zoomLevel = Math.max(1, Math.min(map.zoomLevel, 30));
+                map.zoomLevel = Math.max(5, Math.min(map.zoomLevel, 30));
             }
         }
 

@@ -29,7 +29,7 @@ private:
     void listSerialPortsAndConnections();
     void showTime();
     Logger *logger;  // Logger sınıfının bir örneği
-    void updateTelemetryData();
+    // void updateTelemetryData();
     void onUAVConnected();
     CameraManager *cameraManager;
     void cameraConnectPushButton_clicked();
@@ -37,6 +37,9 @@ private:
     QMediaCaptureSession* captureSession;
     QCamera *camera;
     MainWindow* mainWindowPointer; // MainWindow işaretçisi
+
+public slots:
+    void updateTelemetryData();
 
 };
 
