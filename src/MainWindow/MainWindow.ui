@@ -583,7 +583,7 @@ border-radius: 15;</string>
 </string>
    </property>
    <property name="currentIndex">
-    <number>3</number>
+    <number>1</number>
    </property>
    <widget class="QWidget" name="statusTab">
     <attribute name="title">

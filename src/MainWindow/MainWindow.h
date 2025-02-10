@@ -22,6 +22,7 @@ public:
     ~MainWindow();
     QMediaCaptureSession* getCaptureSession() const { return captureSession; }
 
+
 private:
     Ui::MainWindow *ui;
     UAVManager *uavManager; // UAVManager nesnesi
@@ -39,9 +40,15 @@ private:
     QCamera *camera;
     MainWindow* mainWindowPointer; // MainWindow işaretçisi
     void setLabel(QLabel* label, bool condition, const QString& trueText, const QString& falseText, const QString& fontFamily, int fontSize, int fontWeight);
+
+
+private slots:
+    void updateUAVPosition(double latitude, double longitude);
+
+
 public slots:
     void updateTelemetryData();
-
+    void updateCoordinates(double latitude, double longitude);
 };
 
 #endif // MAINWINDOW_H

@@ -7,7 +7,8 @@
 #include <QMediaCaptureSession>
 #include <QVideoSink>
 #include "qboxlayout.h"
-
+#include <QQmlContext>
+#include <QQuickItem>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -60,7 +61,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->armStringLabel->setAlignment(Qt::AlignCenter);
     ui->flightModeLabel->setAlignment(Qt::AlignCenter);
 
-
+    ui->quickWidget->rootContext()->setContextProperty("mapFunction", this); // qml haritanın mainwindow sınıfındaki fonksiyonlara erişimine "mapFunction" adı altında izin verir
 
 
 }
@@ -183,7 +184,7 @@ void MainWindow::updateTelemetryData() {
     ui->altitudeLabel->setText(QString::number(position.absolute_altitude_m, 'f', 2));
 
     /// position'dan gelen kordinat bilgileri ile haritayı güncelle
-
+    updateUAVPosition(position.latitude_deg, position.longitude_deg);
 
 
 
@@ -305,3 +306,27 @@ void MainWindow::showTime(){
     QString formattedDateTime = currentDateTime.toString("hh:mm:ss");
     ui->timeLabel->setText(formattedDateTime);
 }
+
+
+void MainWindow::updateCoordinates(double latitude, double longitude)
+{
+    QString coordinates = QString("%1  %2").arg(latitude).arg(longitude);
+
+    /// haritadan işaretlenen kordinatı işle
+
+    ui->coordinateLabel->setText(coordinates);
+}
+
+void MainWindow::updateUAVPosition(double latitude, double longitude)
+{
+
+    QObject *rootObject = ui->quickWidget->rootObject();
+    QVariant lat = latitude;
+    QVariant lon = longitude;
+    QMetaObject::invokeMethod(rootObject, "updateUAVCoordinate",
+                              Q_ARG(QVariant, lat),
+                              Q_ARG(QVariant, lon));
+}
+
+
+
