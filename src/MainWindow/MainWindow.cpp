@@ -92,12 +92,16 @@ void MainWindow::setupConnections()
     // Bağlanma sinyalini dinle
     connect(uavManager, &UAVManager::connected, this, [=]() {
         ui->connectPushButton->setText("Disconnect UAV"); // Buton metnini güncelle
+        ui->connectionStatusLabel->setText("CONNECTED");
+        ui->connectionStatusLabel->setStyleSheet("color: rgb(34, 177, 76); font: 700 10pt 'Segoe UI';");
         qDebug() << "UAV başarıyla bağlandı!";
     });
 
     // Bağlantı kesilme sinyalini dinle
     connect(uavManager, &UAVManager::disconnected, this, [=]() {
         ui->connectPushButton->setText("Connect UAV"); // Buton metnini güncelle
+        ui->connectionStatusLabel->setText("NOT CONNECTED !!!");
+        ui->connectionStatusLabel->setStyleSheet("color: rgb(255, 19, 90); font: 700 10pt 'Segoe UI';");
         qDebug() << "UAV bağlantısı kesildi.";
     });
 
@@ -119,7 +123,11 @@ void MainWindow::setupConnections()
 
     connect(ui->refreshPortsPushButton, &QPushButton::clicked, this, &MainWindow::listSerialPortsAndConnections);
 
-
+    connect(ui->armPushButton, &QPushButton::clicked, this, [this]() { uavManager->arm(); });
+    connect(ui->takeoffPushButton, &QPushButton::clicked, this, [this]() {
+        int takeoffHeight = ui->spinBox->value();  // SpinBox'tan değeri al
+        uavManager->takeoff(takeoffHeight);  // Değeri takeoff fonksiyonuna ilet
+    });
 
 
     //Logger::instance().log("Signal-slot bağlantıları ayarlandı.");
@@ -159,6 +167,9 @@ void MainWindow::listSerialPortsAndConnections() {
     ui->cameraComboBox->addItems(cameras);
 
 }
+
+
+
 
 void MainWindow::updateTelemetryData() {
 
@@ -214,20 +225,40 @@ void MainWindow::updateTelemetryData() {
     ui->flightModeLabel->setText(mode);
 
 
-    ui->armStringLabel->setText(telemetryHandler->isArmed() ? "ARM" : "DISARM");
 
+    // ARM/DISARM Label'ı için özel font ve boyut
+    setLabel(ui->armStringLabel, telemetryHandler->isArmed(), "ARM", "DISARM", "Ubuntu", 20, 700);
 
+    // Health verilerini almak
+    auto health = telemetryHandler->getHealth();
 
+    // Kalibrasyonlar için font: 700 14pt "Ubuntu"
+    setLabel(ui->gyroValueLabel, health.is_gyrometer_calibration_ok, "Calibrated", "Not Calibrated", "Ubuntu", 14, 700);
+    setLabel(ui->accelValueLabel, health.is_accelerometer_calibration_ok, "Calibrated", "Not Calibrated", "Ubuntu", 14, 700);
+    setLabel(ui->magValueLabel, health.is_magnetometer_calibration_ok, "Calibrated", "Not Calibrated", "Ubuntu", 14, 700);
 
-
-
-
-
-
-
+    // Diğer veriler için font: 700 14pt "Ubuntu"
+    setLabel(ui->localPosValueLabel, health.is_local_position_ok, "Good", "Bad", "Ubuntu", 14, 700);
+    setLabel(ui->globalPosValueLabel, health.is_global_position_ok, "Good", "Bad", "Ubuntu", 14, 700);
+    setLabel(ui->homePosValueLabel, health.is_home_position_ok, "Initialized", "Not Initialized", "Ubuntu", 14, 700);
+    setLabel(ui->armableValueLabel, health.is_armable, "Yes", "No", "Ubuntu", 14, 700);
 
 
 }
+
+void MainWindow::setLabel(QLabel* label, bool condition, const QString& trueText, const QString& falseText,
+                          const QString& fontFamily, int fontSize, int fontWeight) {
+    label->setText(condition ? trueText : falseText);
+
+    // Stil ve font ayarlarını yapıyoruz
+    label->setStyleSheet(QString("color: %1; font-family: %2; font-size: %3pt; font-weight: %4;")
+                             .arg(condition ? "#33d9b2" : "#ff5252")
+                             .arg(fontFamily)
+                             .arg(fontSize)
+                             .arg(fontWeight));
+}
+
+
 
 void MainWindow::onUAVConnected() {
 

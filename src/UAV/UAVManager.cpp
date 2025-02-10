@@ -8,7 +8,7 @@ using namespace mavsdk;
 UAVManager::UAVManager(QObject *parent)
     : QObject(parent),
     connectedStatus(false),
-    mavsdk(std::make_unique<Mavsdk>(Mavsdk::Configuration{Mavsdk::ComponentType::GroundStation})) {}
+    mavsdk(std::make_unique<Mavsdk>(Mavsdk::Configuration{ComponentType::GroundStation})) {}
 
 UAVManager::~UAVManager() {
     disconnectFromUAV();
@@ -170,7 +170,7 @@ void UAVManager::disconnectFromUAV() {
 }
 
 
-void UAVManager::takeoff(const qint32 takeoff_height) {
+void UAVManager::arm() {
     if (!action) {
         qDebug() << "Action nesnesi henüz oluşturulmadı.";
         return;
@@ -178,13 +178,31 @@ void UAVManager::takeoff(const qint32 takeoff_height) {
 
     auto result = action->arm();
     if (result != mavsdk::Action::Result::Success) {
-        // qDebug() << "UAV arm edilemedi. Hata:" << mavsdk::action_result_str(result).c_str();
+        qDebug() << "UAV arm edilemedi. Hata:" ;
         return;
     }
 
+    qDebug() << "UAV başarıyla arm edildi.";
+}
+
+void UAVManager::takeoff(qint32 takeoff_height) {
+    if (!action) {
+        qDebug() << "Action nesnesi henüz oluşturulmadı.";
+        return;
+    }
+
+    // Kalkış yüksekliği ayarlanıyor
+    auto result = action->set_takeoff_altitude(static_cast<float>(takeoff_height));
+    if (result != mavsdk::Action::Result::Success) {
+        qDebug() << "Kalkış yüksekliği ayarlanamadı. Hata:" ;
+        return;
+    }
+
+    qDebug() << "Kalkış yüksekliği " << takeoff_height << " metre olarak ayarlandı.";
+
     result = action->takeoff();
     if (result != mavsdk::Action::Result::Success) {
-        // qDebug() << "Takeoff işlemi başarısız. Hata:" << mavsdk::action_result_str(result).c_str();
+        qDebug() << "Takeoff işlemi başarısız. Hata:" ;
     } else {
         qDebug() << "Takeoff işlemi başarılı.";
     }

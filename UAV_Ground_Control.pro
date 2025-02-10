@@ -42,10 +42,15 @@ RESOURCES += \
     resources/resources.qrc
 
 # Kütüphane yolları ve ekleme (MAVSDK veya diğer üçüncü taraf kütüphaneler)
-LIBS += -L/usr/lib -lmavsdk
-INCLUDEPATH +=  /usr/include/mavsdk \
-                /usr/include/mavsdk/mavlink \
-                /usr/include/mavsdk/mavlink/common
+# Include the MAVSDK headers
+INCLUDEPATH += /home/efe/MAVSDK/install/include
+INCLUDEPATH += /home/efe/MAVSDK/install/include/mavsdk
+
+# Add the MAVSDK library path
+LIBS += -L/home/efe/MAVSDK/install/lib
+
+# Link against the MAVSDK library
+LIBS += -lmavsdk
 
 CONFIG += lrelease
 CONFIG += embed_translations

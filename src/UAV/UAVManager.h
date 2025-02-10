@@ -24,6 +24,8 @@ public:
     bool isConnected() const;
     bool areComponentsReady() const;
     void takeoff(const qint32 takeoff_height);
+    void arm();
+
     std::unique_ptr<TelemetryHandler>& getTelemetryHandler(); // Sadece prototip
 
 

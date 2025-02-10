@@ -2,7 +2,7 @@
 #define TELEMETRYHANDLER_H
 
 #include <QObject>
-#include "plugins/telemetry/telemetry.h"
+#include <mavsdk/plugins/telemetry/telemetry.h>
 #include <memory>
 
 // TelemetryHandler sınıfı
@@ -26,6 +26,7 @@ public:
     mavsdk::Telemetry::Battery getBattery() const;
     bool isArmed() const;
     double getTotalSpeed() const;
+    mavsdk::Telemetry::Health getHealth() const;  // Sağlık durumu getter'ı
 
 signals:
     // Sinyaller
@@ -54,8 +55,10 @@ private:
     void subscribeBattery();
     void subscribeArmed();
     void subscribeTotalSpeed();
+    void subscribeHealth();
 
     QString flightModeToString(mavsdk::Telemetry::FlightMode mode);
+    mavsdk::Telemetry::Health health;  // Sağlık durumu verisini tutacak üyeyi ekledik
 
 };
 

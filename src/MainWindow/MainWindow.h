@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "qlabel.h"
 #include "src/Camera/CameraManager.h"
 #include "src/UAV/UAVManager.h"
 #include "src/Utils/Logger.h"
@@ -37,7 +38,7 @@ private:
     QMediaCaptureSession* captureSession;
     QCamera *camera;
     MainWindow* mainWindowPointer; // MainWindow işaretçisi
-
+    void setLabel(QLabel* label, bool condition, const QString& trueText, const QString& falseText, const QString& fontFamily, int fontSize, int fontWeight);
 public slots:
     void updateTelemetryData();
 
