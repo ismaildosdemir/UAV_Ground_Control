@@ -10,6 +10,7 @@ UAVManager::UAVManager(QObject *parent)
     connectedStatus(false),
     mavsdk(std::make_unique<Mavsdk>(Mavsdk::Configuration{ComponentType::GroundStation})) {}
 
+
 UAVManager::~UAVManager() {
     disconnectFromUAV();
 }
@@ -150,6 +151,10 @@ void UAVManager::connectToUAV(const QString &portName, const QString & baudRate)
     telemetryThread->start(); // Thread'i başlatın
 
 
+
+
+    mission = std::make_shared<mavsdk::Mission>(system);
+
     connectedStatus = true;
     emit connected();
 }
@@ -183,6 +188,10 @@ void UAVManager::arm() {
     }
 
     qDebug() << "UAV başarıyla arm edildi.";
+
+
+
+
 }
 
 void UAVManager::takeoff(qint32 takeoff_height) {
@@ -210,11 +219,61 @@ void UAVManager::takeoff(qint32 takeoff_height) {
 
 
 
+void UAVManager::sendCoordinatesToUAV(double latitude, double longitude, double altitude, double speed, double yaw)
+{
+    if (!mission) {
+        qDebug() << "Mission plugin'i başlatılamadı!";
+        return;
+    }
+
+
+    if (action) {
+        auto result = action->set_current_speed((float) speed); // 10 m/s olarak ayarla
+        if (result == mavsdk::Action::Result::Success) {
+            qDebug() << "UAV hızı başarıyla değiştirildi!";
+        } else {
+            qDebug() << "Hız değiştirilemedi, hata kodu:" << static_cast<int>(result);
+        }
+    }
+
+    Mission::MissionItem mission_item;
+    mission_item.latitude_deg = latitude;
+    mission_item.longitude_deg = longitude;
+    mission_item.relative_altitude_m = (float)altitude;
+    mission_item.speed_m_s = (float)speed;
+    mission_item.is_fly_through = true;
+    mission_item.acceptance_radius_m = (float)1.0;
+    mission_item.yaw_deg = (float)yaw;
 
 
 
+    std::vector<Mission::MissionItem> mission_items;
+    mission_items.push_back(mission_item);
 
+    Mission::MissionPlan mission_plan;
+    mission_plan.mission_items = mission_items;
 
+    // Yeni bir thread oluşturarak görev yükleme ve başlatma işlemlerini yap
+    QThread *missionThread = QThread::create([this, mission_plan]() {
+        auto result = mission->upload_mission(mission_plan);
+        if (result != mavsdk::Mission::Result::Success) {
+            qDebug() << "Görev yükleme hatası: " << static_cast<int>(result);
+            return;
+        }
+
+        qDebug() << "Görev başarıyla yüklendi!";
+
+        result = mission->start_mission();
+        if (result != mavsdk::Mission::Result::Success) {
+            qDebug() << "Görev başlatma hatası: " << static_cast<int>(result);
+            return;
+        }
+
+        qDebug() << "Görev başlatıldı!";
+    });
+
+    missionThread->start();
+}
 
 
 

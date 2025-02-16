@@ -7,6 +7,9 @@
 #include <mavsdk/mavsdk.h>
 #include <mavsdk/plugins/telemetry/telemetry.h>
 #include <mavsdk/plugins/action/action.h>
+#include <mavsdk/mavsdk.h>
+#include <mavsdk/plugins/mission_raw/mission_raw.h>
+#include <mavsdk/plugins/mission/mission.h>
 
 enum class FlightCommand { TakeOff, Land, ReturnToHome };
 
@@ -27,6 +30,7 @@ public:
     void arm();
 
     std::unique_ptr<TelemetryHandler>& getTelemetryHandler(); // Sadece prototip
+    void sendCoordinatesToUAV(double latitude, double longitude, double altitude, double speed, double yaw);
 
 
 signals:
@@ -39,10 +43,7 @@ private:
     // ConnectionHandle türünde bir değişken oluşturma
     ConnectionHandle myConnectionHandle;
     std::unique_ptr<TelemetryHandler> telemetryHandler; // Üye değişken
-
-
-
-
+    std::shared_ptr<mavsdk::Mission> mission;
     bool connectedStatus = false; // Varsayılan olarak bağlantı durumu yanlış
     QString connectionString;
     std::unique_ptr<mavsdk::Mavsdk> mavsdk;

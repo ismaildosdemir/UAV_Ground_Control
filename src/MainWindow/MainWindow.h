@@ -41,6 +41,7 @@ private:
     MainWindow* mainWindowPointer; // MainWindow işaretçisi
     void setLabel(QLabel* label, bool condition, const QString& trueText, const QString& falseText, const QString& fontFamily, int fontSize, int fontWeight);
 
+    double togoLat, togoLon;
 
 private slots:
     void updateUAVPosition(double latitude, double longitude);

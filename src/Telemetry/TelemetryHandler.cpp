@@ -70,7 +70,7 @@ mavsdk::Telemetry::Health TelemetryHandler::getHealth() const {
 void TelemetryHandler::subscribePosition() {
     telemetry->subscribe_position([this](const mavsdk::Telemetry::Position &pos) {
         position = pos;
-        qDebug() << "Position telemetry updated!";
+        //qDebug() << "Position telemetry updated!";
 
         emit telemetryDataUpdated();
     });
@@ -136,13 +136,13 @@ void TelemetryHandler::subscribeHealth() {
         health = healthData;
 
         // Sağlık durumu bilgilerini yazdırma
-        qDebug() << "Gyro Calibrated: " << (healthData.is_gyrometer_calibration_ok ? "Yes" : "No");
-        qDebug() << "Accel Calibrated: " << (healthData.is_accelerometer_calibration_ok ? "Yes" : "No");
-        qDebug() << "Mag Calibrated: " << (healthData.is_magnetometer_calibration_ok ? "Yes" : "No");
-        qDebug() << "Local Position OK: " << (healthData.is_local_position_ok ? "Yes" : "No");
-        qDebug() << "Global Position OK: " << (healthData.is_global_position_ok ? "Yes" : "No");
-        qDebug() << "Home Position Initialized: " << (healthData.is_home_position_ok ? "Yes" : "No");
-        qDebug() << "Armable: " << (healthData.is_armable ? "Yes" : "No");
+        //qDebug() << "Gyro Calibrated: " << (healthData.is_gyrometer_calibration_ok ? "Yes" : "No");
+      //  qDebug() << "Accel Calibrated: " << (healthData.is_accelerometer_calibration_ok ? "Yes" : "No");
+     //   qDebug() << "Mag Calibrated: " << (healthData.is_magnetometer_calibration_ok ? "Yes" : "No");
+     //   qDebug() << "Local Position OK: " << (healthData.is_local_position_ok ? "Yes" : "No");
+     //   qDebug() << "Global Position OK: " << (healthData.is_global_position_ok ? "Yes" : "No");
+     //   qDebug() << "Home Position Initialized: " << (healthData.is_home_position_ok ? "Yes" : "No");
+     //   qDebug() << "Armable: " << (healthData.is_armable ? "Yes" : "No");
 
         emit telemetryDataUpdated();
     });

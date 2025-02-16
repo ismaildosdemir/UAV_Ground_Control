@@ -126,9 +126,19 @@ void MainWindow::setupConnections()
 
     connect(ui->armPushButton, &QPushButton::clicked, this, [this]() { uavManager->arm(); });
     connect(ui->takeoffPushButton, &QPushButton::clicked, this, [this]() {
-        int takeoffHeight = ui->spinBox->value();  // SpinBox'tan değeri al
+        int takeoffHeight = ui->altitudeSpinBox->value();  // SpinBox'tan değeri al
         uavManager->takeoff(takeoffHeight);  // Değeri takeoff fonksiyonuna ilet
     });
+
+    connect(ui->headTowardsPushButton, &QPushButton::clicked, this, [this]() {
+        int takeoffHeight = ui->altitudeSpinBox->value();  // SpinBox'tan değeri al
+        int speed = ui->speedSpinBox->value();  // SpinBox'tan değeri al
+        int yaw = ui->yawSpinBox->value();  // SpinBox'tan değeri al
+
+        uavManager->sendCoordinatesToUAV(togoLat, togoLon, takeoffHeight, speed, yaw);  // Değeri takeoff fonksiyonuna ilet
+    });
+
+
 
 
     //Logger::instance().log("Signal-slot bağlantıları ayarlandı.");
@@ -284,7 +294,6 @@ void MainWindow::onUAVConnected() {
 
 void MainWindow::cameraConnectPushButton_clicked()
 {
-
 // camera is connect? if/else
     if (cameraManager->isCameraConnected()) {
     cameraManager->disconnectCamera();
@@ -307,19 +316,18 @@ void MainWindow::showTime(){
     ui->timeLabel->setText(formattedDateTime);
 }
 
-
-void MainWindow::updateCoordinates(double latitude, double longitude)
+void MainWindow::updateCoordinates(double lat, double lon)
 {
-    QString coordinates = QString("%1  %2").arg(latitude).arg(longitude);
-
+    togoLat=lat;
+    togoLon=lon;
     /// haritadan işaretlenen kordinatı işle
 
-    ui->coordinateLabel->setText(coordinates);
+    ui->coordinateLabel->setText(QString("%1  %2").arg(lat).arg(lon));
 }
+
 
 void MainWindow::updateUAVPosition(double latitude, double longitude)
 {
-
     QObject *rootObject = ui->quickWidget->rootObject();
     QVariant lat = latitude;
     QVariant lon = longitude;
