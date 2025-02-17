@@ -334,6 +334,9 @@ void MainWindow::updateCoordinates(double lat, double lon)
     togoLon=lon;
     /// haritadan işaretlenen kordinatı işle
 
+    // qDebug() ile koordinatları yazdırmak
+    qDebug() << "Latitude: " << lat << "Longitude: " << lon;
+
     ui->coordinateLabel->setText(QString("%1  %2").arg(lat).arg(lon));
 }
 
@@ -341,9 +344,6 @@ void MainWindow::updateCoordinates(double lat, double lon)
 void MainWindow::updateUAVPosition(double latitude, double longitude, double headingDegrees)
 {
     QObject *rootObject = ui->quickWidget->rootObject();
-    QVariant lat = latitude;
-    QVariant lon = longitude;
-    QVariant a = headingDegrees;
 
     // QML'deki updateUAVCoordinate fonksiyonunu çağır
     QMetaObject::invokeMethod(rootObject, "updateUAVCoordinate",

@@ -57,12 +57,9 @@ public slots:
                           mavsdk::log::Level level);
 
 
-
-
-
-
-
-
-
 };
 #endif // LOGGER_H
+
+
+
+

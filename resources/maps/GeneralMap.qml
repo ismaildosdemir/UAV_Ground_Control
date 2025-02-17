@@ -11,6 +11,9 @@ Rectangle {
     property var trailPath: [] // UAV'ın geçtiği izler
     property var clickedCoordinate: QtPositioning.coordinate(0, 0) // Son tıklanan konum
 
+    property double lat: 0.1
+    property double lon: 0.1
+
     Map {
         id: map
         anchors.fill: parent
@@ -80,14 +83,26 @@ Rectangle {
         }
 
 
+
         // Haritada tıklanan yere işaret koyma
         MouseArea {
             id: mapMouseArea
             anchors.fill: parent
             onClicked: {
                 var coordinate = map.toCoordinate(Qt.point(mouse.x, mouse.y));
-                console.log("Clicked coordinate - Latitude:", coordinate.latitude, "Longitude:", coordinate.longitude);
-                mapFunction.updateCoordinates(coordinate.latitude, coordinate.longitude); // C++ tarafındaki işlevi çağır
+
+                // Koordinatları hassasiyetle al
+                lat = coordinate.latitude.toFixed(8);
+                lon = coordinate.longitude.toFixed(8);
+
+
+                // Konsola koordinatları yazdır
+                console.log("Clicked coordinate - Latitude:", lat, "Longitude:", lon);
+
+                // C++ tarafındaki işlevi çağır
+                mapFunction.updateCoordinates(lat, lon);
+
+
 
                 clickedCoordinate = QtPositioning.coordinate(coordinate.latitude, coordinate.longitude);
                 clickMarker.visible = true; // İşareti görünür yap

@@ -1,5 +1,6 @@
 #include "CameraManager.h"
 #include <QDebug>
+#include "src/Utils/Logger.h"
 
 CameraManager::CameraManager(QObject *parent)
     : QObject(parent),
@@ -17,6 +18,7 @@ CameraManager::~CameraManager()
 void CameraManager::connectToCamera(const QString &cameraName)
 {
     if (cameraName.isEmpty()) {
+        Logger::instance().log("Kamera adı boş!", ERROR);  // Log: Kamera adı boş
         qDebug() << "Kamera adı boş!";
         return;
     }
@@ -35,7 +37,9 @@ void CameraManager::connectToCamera(const QString &cameraName)
     }
 
     if (!foundCamera) {
-        qDebug() << "Kamera bulunamadı: " << cameraName;
+        QString errorMsg = "Kamera bulunamadı: " + cameraName;
+        Logger::instance().log(errorMsg, ERROR);  // Log: Kamera bulunamadı
+        qDebug() << errorMsg;
         return;
     }
 
@@ -43,9 +47,12 @@ void CameraManager::connectToCamera(const QString &cameraName)
     camera->start();
 
     if (camera && camera->isActive()) { // Kamera başarılı şekilde başladı
-        qDebug() << "Kamera başarıyla bağlandı: " << cameraName;
+        QString successMsg = "Kamera başarıyla bağlandı: " + cameraName;
+        Logger::instance().log(successMsg, INFO);  // Log: Kamera başarılı şekilde bağlandı
         emit cameraStarted(cameraName); // Kamera açıldığını bildir
+        qDebug() << successMsg;
     } else {
+        Logger::instance().log("Kamera başlatılamadı!", ERROR);  // Log: Kamera başlatılamadı
         qDebug() << "Kamera başlatılamadı!";
         disconnectCamera();
     }
@@ -54,11 +61,13 @@ void CameraManager::connectToCamera(const QString &cameraName)
 void CameraManager::disconnectCamera()
 {
     if (camera) {
-
+        Logger::instance().log("Kamera durduruluyor...", INFO);  // Log: Kamera durduruluyor
         qDebug() << "Kamera durduruluyor...";
         camera->stop(); // Kamerayı durdur
 
         emit cameraStopped(); // Kamera kapandığını bildir
+        Logger::instance().log("Kamera durduruldu.", INFO);  // Log: Kamera durduruldu
+        qDebug() << "Kamera durduruldu";
 
         delete camera; // Kamera nesnesini sil
         camera = nullptr;

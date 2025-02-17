@@ -72,7 +72,6 @@ void Logger::rotateLogFile()
     }
 }
 
-
 void Logger::appendLogMessage(const QString &message , QPlainTextEdit *logTextEdit, const QString &logLevel , mavsdk::log::Level level) {
     // Get current date and time
 
