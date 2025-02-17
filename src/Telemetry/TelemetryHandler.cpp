@@ -1,22 +1,28 @@
 #include "TelemetryHandler.h"
 #include "qdebug.h"
+#include "src/Utils/Logger.h"
 #include <cmath>
 
 // Constructor
 TelemetryHandler::TelemetryHandler(std::shared_ptr<mavsdk::Telemetry> telemetry, QObject *parent)
-    : QObject(parent), telemetry(std::move(telemetry)) {}
+    : QObject(parent), telemetry(std::move(telemetry)) {
+    Logger::instance().log("TelemetryHandler başlatıldı", INFO);  // Log: Başlatıldı
+}
 
 // Destructor
-TelemetryHandler::~TelemetryHandler() {}
+TelemetryHandler::~TelemetryHandler() {
+    Logger::instance().log("TelemetryHandler sonlandırıldı", INFO);  // Log: Sonlandırıldı
+}
 
 // Telemetry verilerini başlat
 void TelemetryHandler::start() {
-
     if (!telemetry) {
+        Logger::instance().log("Telemetry shared pointer geçersiz!", ERROR);  // Log: Geçersiz pointer
         qDebug() << "Telemetry shared pointer geçersiz!";
         return;
     }
 
+    Logger::instance().log("Telemetry verileri başlatılıyor...", INFO);  // Log: Başlatılıyor
     subscribePosition();
     subscribeheading();
     subscribeAttitude();
@@ -28,8 +34,6 @@ void TelemetryHandler::start() {
     subscribeTotalSpeed();
     subscribeHealth(); // Sağlık durumu aboneliği
     subscribeConnnectionState();
-
-
 }
 
 // Getter fonksiyonları
@@ -77,7 +81,6 @@ mavsdk::Telemetry::RcStatus TelemetryHandler::getRcStatus() const {
     return rcStatus;
 }
 
-
 // Telemetry verileri için abonelik fonksiyonları
 void TelemetryHandler::subscribePosition() {
     telemetry->subscribe_position([this](const mavsdk::Telemetry::Position &pos) {
@@ -92,6 +95,7 @@ void TelemetryHandler::subscribeheading() {
         emit telemetryDataUpdated();
     });
 }
+
 void TelemetryHandler::subscribeAttitude() {
     telemetry->subscribe_attitude_euler([this](const mavsdk::Telemetry::EulerAngle &att) {
         attitude = att;
@@ -145,7 +149,6 @@ void TelemetryHandler::subscribeTotalSpeed() {
     });
 }
 
-
 void TelemetryHandler::subscribeHealth() {
     telemetry->subscribe_health([this](const mavsdk::Telemetry::Health& healthData) {
         health = healthData;
@@ -153,33 +156,18 @@ void TelemetryHandler::subscribeHealth() {
     });
 }
 
-
-
-/// usb telemetry  dene, simülasyonda is_available hep false geliyor
+// USB telemetry dene, simülasyonda is_available hep false geliyor
 void TelemetryHandler::subscribeConnnectionState() {
-
     telemetry->subscribe_rc_status([this](mavsdk::Telemetry::RcStatus rc_status) {
-        qDebug() << "📡 RC Status Callback ÇALIŞTI!";
-        qDebug() << "   is_available: " << rc_status.is_available;
-        qDebug() << "   signal_strength_percent: " << rc_status.signal_strength_percent;
+
 
         if (rc_status.is_available) {
             emit telemetryDataUpdated();
-            qDebug() << "✅ RC bağlantısı mevcut!";
         } else {
-            qDebug() << "❌ RC bağlantısı KESİLDİ!";
-            emit telemetryDataUpdated();
+
         }
     });
 }
-
-
-
-
-
-
-
-
 
 QString TelemetryHandler::flightModeToString(mavsdk::Telemetry::FlightMode mode) {
     switch (mode) {
