@@ -146,7 +146,7 @@ void UAVManager::connectToUAV(const QString &portName, const QString & baudRate)
 
     QThread *telemetryThread = QThread::create([this]() {
         telemetryHandler->start();  // TelemetryHandler'ın başlatılması
-        QMetaObject::invokeMethod(this, "onTelemetryStarted", Qt::QueuedConnection);
+        //QMetaObject::invokeMethod(this, "onTelemetryStarted", Qt::QueuedConnection);
     });
     telemetryThread->start(); // Thread'i başlatın
 

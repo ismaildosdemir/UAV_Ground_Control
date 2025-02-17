@@ -7,12 +7,14 @@ Rectangle {
     height: 600
 
     property var uavCoordinate: QtPositioning.coordinate(39.925025, 32.836943) // UAV başlangıç konumu
+    property real uavHeading: 0 // UAV'ın yön açısı
+    property var trailPath: [] // UAV'ın geçtiği izler
     property var clickedCoordinate: QtPositioning.coordinate(0, 0) // Son tıklanan konum
 
     Map {
         id: map
         anchors.fill: parent
-        opacity: 0.99 // https://bugreports.qt.io/browse/QTBUG-82185
+        opacity: 0.99
         plugin: Plugin {
             name: "osm"
             PluginParameter {
@@ -24,18 +26,27 @@ Rectangle {
         center: uavCoordinate
         zoomLevel: 18
 
-        // UAV'ın konumunu göstermek için işaretçi
+        // UAV'ın izini gösteren poligon
+        MapPolyline {
+            id: trail
+            line.width: 3
+            line.color: "#aaFF0000" // Hafif saydam kırmızı
+            smooth: true
+            path: trailPath
+        }
+
+        // UAV'ı temsil eden SVG
         MapQuickItem {
             id: uavMarker
             coordinate: uavCoordinate
-            sourceItem: Rectangle {
-                width: 10
-                height: 10
-                color: "red"
-                radius: 5
-                border.color: "white"
+            sourceItem: Image {
+                source: "qrc:/images/images/uav.svg"
+                width: 30
+                height: 30
+                transform: Rotation {angle: uavHeading}
             }
         }
+
 
         // Tıklanan yeri göstermek için işaretçi
         MapQuickItem {
@@ -53,6 +64,7 @@ Rectangle {
             }
         }
 
+
         // Fare tekerleği ile yakınlaştırma
         WheelHandler {
             id: wheelHandler
@@ -66,6 +78,7 @@ Rectangle {
                 map.zoomLevel = Math.max(5, Math.min(map.zoomLevel, 30));
             }
         }
+
 
         // Haritada tıklanan yere işaret koyma
         MouseArea {
@@ -83,8 +96,17 @@ Rectangle {
     }
 
     // UAV konumunu güncellemek için fonksiyon
-    function updateUAVCoordinate(latitude, longitude) {
-        uavCoordinate = QtPositioning.coordinate(latitude, longitude);
+    function updateUAVCoordinate(latitude, longitude, heading) {
+        var newCoordinate = QtPositioning.coordinate(latitude, longitude);
+        uavCoordinate = newCoordinate;
+        uavHeading = heading;
+        //console.log("uavHeading : ",uavHeading);
+
+        // İz bırakmak için eski konumları trail'e ekleyelim
+        if (trailPath.length === 0 || trailPath[trailPath.length - 1] !== newCoordinate) {
+            trailPath.push(newCoordinate);
+        }
+
         map.center = uavCoordinate;
     }
 }

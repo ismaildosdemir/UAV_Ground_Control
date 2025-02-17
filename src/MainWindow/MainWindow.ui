@@ -565,6 +565,61 @@ border-radius: 15;</string>
      </property>
     </widget>
    </widget>
+   <widget class="QFrame" name="signalFrame">
+    <property name="geometry">
+     <rect>
+      <x>270</x>
+      <y>175</y>
+      <width>205</width>
+      <height>80</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color:rgb(86, 109, 48);
+border-radius: 15;</string>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::Shape::Box</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Shadow::Raised</enum>
+    </property>
+    <widget class="QLabel" name="signalStringLabel">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>90</width>
+       <height>60</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">font: 700 20pt &quot;Ubuntu&quot;;</string>
+     </property>
+     <property name="text">
+      <string>Signal:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="signalLabel">
+     <property name="geometry">
+      <rect>
+       <x>100</x>
+       <y>10</y>
+       <width>90</width>
+       <height>60</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">font: 700 20pt &quot;Ubuntu&quot;;</string>
+     </property>
+     <property name="text">
+      <string>%100</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignmentFlag::AlignCenter</set>
+     </property>
+    </widget>
+   </widget>
   </widget>
   <widget class="QTabWidget" name="tabWidget">
    <property name="geometry">

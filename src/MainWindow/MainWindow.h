@@ -44,7 +44,7 @@ private:
     double togoLat, togoLon;
 
 private slots:
-    void updateUAVPosition(double latitude, double longitude);
+    void updateUAVPosition(double latitude, double longitude, double headingDegrees);
 
 
 public slots:

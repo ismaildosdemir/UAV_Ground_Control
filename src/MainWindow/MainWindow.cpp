@@ -193,8 +193,10 @@ void MainWindow::updateTelemetryData() {
     auto position = telemetryHandler->getPosition();
     ui->altitudeLabel->setText(QString::number(position.absolute_altitude_m, 'f', 2));
 
+    auto heading = telemetryHandler->getHeading();
+
     /// position'dan gelen kordinat bilgileri ile haritayı güncelle
-    updateUAVPosition(position.latitude_deg, position.longitude_deg);
+    updateUAVPosition(position.latitude_deg, position.longitude_deg, heading.heading_deg);
 
 
 
@@ -253,6 +255,16 @@ void MainWindow::updateTelemetryData() {
     setLabel(ui->globalPosValueLabel, health.is_global_position_ok, "Good", "Bad", "Ubuntu", 14, 700);
     setLabel(ui->homePosValueLabel, health.is_home_position_ok, "Initialized", "Not Initialized", "Ubuntu", 14, 700);
     setLabel(ui->armableValueLabel, health.is_armable, "Yes", "No", "Ubuntu", 14, 700);
+
+
+    auto RcStatus = telemetryHandler->getRcStatus();
+    ui->signalLabel->setText(QString::number(RcStatus.signal_strength_percent, 'f', 2) + "%" );
+
+
+
+
+
+
 
 
 }
@@ -326,14 +338,18 @@ void MainWindow::updateCoordinates(double lat, double lon)
 }
 
 
-void MainWindow::updateUAVPosition(double latitude, double longitude)
+void MainWindow::updateUAVPosition(double latitude, double longitude, double headingDegrees)
 {
     QObject *rootObject = ui->quickWidget->rootObject();
     QVariant lat = latitude;
     QVariant lon = longitude;
+    QVariant a = headingDegrees;
+
+    // QML'deki updateUAVCoordinate fonksiyonunu çağır
     QMetaObject::invokeMethod(rootObject, "updateUAVCoordinate",
-                              Q_ARG(QVariant, lat),
-                              Q_ARG(QVariant, lon));
+                              Q_ARG(QVariant, latitude),
+                              Q_ARG(QVariant, longitude),
+                              Q_ARG(QVariant, headingDegrees));
 }
 
 

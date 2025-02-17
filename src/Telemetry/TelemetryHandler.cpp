@@ -18,6 +18,7 @@ void TelemetryHandler::start() {
     }
 
     subscribePosition();
+    subscribeheading();
     subscribeAttitude();
     subscribeFixedwingMetrics();
     subscribeFlightMode();
@@ -26,12 +27,18 @@ void TelemetryHandler::start() {
     subscribeArmed();
     subscribeTotalSpeed();
     subscribeHealth(); // Sağlık durumu aboneliği
+    subscribeConnnectionState();
+
 
 }
 
 // Getter fonksiyonları
 mavsdk::Telemetry::Position TelemetryHandler::getPosition() const {
     return position;
+}
+
+mavsdk::Telemetry::Heading TelemetryHandler::getHeading() const {
+    return heading;
 }
 
 mavsdk::Telemetry::EulerAngle TelemetryHandler::getAttitude() const {
@@ -66,16 +73,25 @@ mavsdk::Telemetry::Health TelemetryHandler::getHealth() const {
     return health;
 }
 
+mavsdk::Telemetry::RcStatus TelemetryHandler::getRcStatus() const {
+    return rcStatus;
+}
+
+
 // Telemetry verileri için abonelik fonksiyonları
 void TelemetryHandler::subscribePosition() {
     telemetry->subscribe_position([this](const mavsdk::Telemetry::Position &pos) {
         position = pos;
-        //qDebug() << "Position telemetry updated!";
-
         emit telemetryDataUpdated();
     });
 }
 
+void TelemetryHandler::subscribeheading() {
+    telemetry->subscribe_heading([this](const mavsdk::Telemetry::Heading &head) {
+        heading = head;
+        emit telemetryDataUpdated();
+    });
+}
 void TelemetryHandler::subscribeAttitude() {
     telemetry->subscribe_attitude_euler([this](const mavsdk::Telemetry::EulerAngle &att) {
         attitude = att;
@@ -130,23 +146,37 @@ void TelemetryHandler::subscribeTotalSpeed() {
 }
 
 
-// Sağlık durumu abonelik fonksiyonu
 void TelemetryHandler::subscribeHealth() {
     telemetry->subscribe_health([this](const mavsdk::Telemetry::Health& healthData) {
         health = healthData;
-
-        // Sağlık durumu bilgilerini yazdırma
-        //qDebug() << "Gyro Calibrated: " << (healthData.is_gyrometer_calibration_ok ? "Yes" : "No");
-      //  qDebug() << "Accel Calibrated: " << (healthData.is_accelerometer_calibration_ok ? "Yes" : "No");
-     //   qDebug() << "Mag Calibrated: " << (healthData.is_magnetometer_calibration_ok ? "Yes" : "No");
-     //   qDebug() << "Local Position OK: " << (healthData.is_local_position_ok ? "Yes" : "No");
-     //   qDebug() << "Global Position OK: " << (healthData.is_global_position_ok ? "Yes" : "No");
-     //   qDebug() << "Home Position Initialized: " << (healthData.is_home_position_ok ? "Yes" : "No");
-     //   qDebug() << "Armable: " << (healthData.is_armable ? "Yes" : "No");
-
         emit telemetryDataUpdated();
     });
 }
+
+
+
+/// usb telemetry  dene, simülasyonda is_available hep false geliyor
+void TelemetryHandler::subscribeConnnectionState() {
+
+    telemetry->subscribe_rc_status([this](mavsdk::Telemetry::RcStatus rc_status) {
+        qDebug() << "📡 RC Status Callback ÇALIŞTI!";
+        qDebug() << "   is_available: " << rc_status.is_available;
+        qDebug() << "   signal_strength_percent: " << rc_status.signal_strength_percent;
+
+        if (rc_status.is_available) {
+            emit telemetryDataUpdated();
+            qDebug() << "✅ RC bağlantısı mevcut!";
+        } else {
+            qDebug() << "❌ RC bağlantısı KESİLDİ!";
+            emit telemetryDataUpdated();
+        }
+    });
+}
+
+
+
+
+
 
 
 

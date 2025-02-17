@@ -18,6 +18,7 @@ public:
     void start();
 
     // Getter fonksiyonları
+    mavsdk::Telemetry::Heading getHeading() const;
     mavsdk::Telemetry::Position getPosition() const;
     mavsdk::Telemetry::EulerAngle getAttitude() const;
     mavsdk::Telemetry::FixedwingMetrics getFixedwingMetrics() const;
@@ -27,6 +28,7 @@ public:
     bool isArmed() const;
     double getTotalSpeed() const;
     mavsdk::Telemetry::Health getHealth() const;  // Sağlık durumu getter'ı
+    mavsdk::Telemetry::RcStatus getRcStatus() const;
 
 signals:
     // Sinyaller
@@ -37,17 +39,22 @@ private:
     std::shared_ptr<mavsdk::Telemetry> telemetry;
 
     // Veriler
+    mavsdk::Telemetry::Heading heading;
     mavsdk::Telemetry::Position position;
     mavsdk::Telemetry::EulerAngle attitude;
     mavsdk::Telemetry::FixedwingMetrics fixedwingMetrics;
     QString flightMode;
     mavsdk::Telemetry::GpsInfo gpsInfo;
     mavsdk::Telemetry::Battery battery;
+    mavsdk::Telemetry::Health health;  // Sağlık durumu verisini tutacak üyeyi ekledik
+    mavsdk::Telemetry::RcStatus rcStatus;
+
     bool armed = false;
     double totalSpeed = 0.0;
 
     // Telemetry verilerini güncelleyen yardımcı fonksiyonlar
     void subscribePosition();
+    void subscribeheading();
     void subscribeAttitude();
     void subscribeFixedwingMetrics();
     void subscribeFlightMode();
@@ -56,9 +63,9 @@ private:
     void subscribeArmed();
     void subscribeTotalSpeed();
     void subscribeHealth();
+    void subscribeConnnectionState();
 
     QString flightModeToString(mavsdk::Telemetry::FlightMode mode);
-    mavsdk::Telemetry::Health health;  // Sağlık durumu verisini tutacak üyeyi ekledik
 
 };
 
