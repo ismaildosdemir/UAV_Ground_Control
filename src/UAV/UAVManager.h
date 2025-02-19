@@ -2,6 +2,7 @@
 #define UAVMANAGER_H
 
 #include "src/Telemetry/TelemetryHandler.h"
+#include "src/Utils/Logger.h"
 #include <QObject>
 #include <memory>
 #include <mavsdk/mavsdk.h>
@@ -50,7 +51,7 @@ private:
     std::shared_ptr<mavsdk::System> system;
     std::shared_ptr<mavsdk::Action> action;
     std::shared_ptr<mavsdk::Telemetry> telemetry;
-
+    Logger *logger;  // Logger sınıfının bir örneği
 };
 
 #endif // UAVMANAGER_H

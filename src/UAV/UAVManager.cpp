@@ -60,35 +60,26 @@ QString connectionResultToString(ConnectionResult result) {
 }
 
 
-
-void UAVManager::connectToUAV(const QString &portName, const QString & baudRate) {
+void UAVManager::connectToUAV(const QString &portName, const QString &baudRate) {
     if (connectedStatus) {
         emit connected();
+        logger->log("Already connected to UAV.", INFO); // Log kaydı ekledik
         return;
     }
 
-
     if (portName == "Simulation") {
-        // Simülasyon seçildiğinde
         connectionString = "udp://:"+ baudRate;
     } else {
-        // Gerçek cihaz bağlantısı seçildiğinde
         connectionString = "serial://" + portName + ":" + baudRate;
     }
 
-
-
-
     auto [connectionResult, tempHandle] = mavsdk->add_any_connection_with_handle(connectionString.toStdString());
     if (connectionResult != ConnectionResult::Success) {
-        qDebug() << "Connection failed! Error message:"
-                 << connectionResultToString(connectionResult);
+        logger->log("Connection failed! Error message: " + connectionResultToString(connectionResult), ERROR);
         return;
     }
     myConnectionHandle = tempHandle;
 
-
-    // Cihazın bağlantıya hazır olup olmadığını kontrol et
     bool isConnected = false;
     std::chrono::steady_clock::time_point startTime = std::chrono::steady_clock::now();
     while (!isConnected && std::chrono::steady_clock::now() - startTime < std::chrono::seconds(5)) {
@@ -98,71 +89,58 @@ void UAVManager::connectToUAV(const QString &portName, const QString & baudRate)
         }
     }
 
-    // Eğer sistem bağlanmadıysa, hata mesajı göster
     if (!isConnected) {
-        qDebug() <<"Bağlantı kurulamadı, UAV bulunamadı.";
+        logger->log("Failed to connect, UAV not found.", ERROR);
         mavsdk->remove_connection(myConnectionHandle);
         return;
     }
 
-    // Sistem ve plugin'leri başlat
     system = mavsdk->systems().at(0);
     if (!system) {
-        qDebug() <<"Sistem başlatılamadı.";
+        logger->log("Failed to initialize system.", ERROR);
         mavsdk->remove_connection(myConnectionHandle);
         system.reset();
-
         return;
     }
 
-    // Telemetri ve Action plugin'lerini başlat
     action = std::make_shared<mavsdk::Action>(system);
     if (!action) {
-        qDebug() <<"Action plugin'i başlatılamadı.";
+        logger->log("Failed to initialize Action plugin.", ERROR);
         mavsdk->remove_connection(myConnectionHandle);
         action.reset();
         system.reset();
-
-
         return;
     }
 
     telemetry = std::make_shared<mavsdk::Telemetry>(system);
     if (!telemetry) {
-        qDebug() <<"Telemetry plugin'i başlatılamadı.";
+        logger->log("Failed to initialize Telemetry plugin.", ERROR);
         mavsdk->remove_connection(myConnectionHandle);
         telemetry.reset();
         system.reset();
         action.reset();
-
-
         return;
     }
 
-
-    telemetryHandler = std::make_unique<TelemetryHandler>(telemetry); // Constructor ile aktar
-
-
+    telemetryHandler = std::make_unique<TelemetryHandler>(telemetry);
 
     QThread *telemetryThread = QThread::create([this]() {
-        telemetryHandler->start();  // TelemetryHandler'ın başlatılması
-        //QMetaObject::invokeMethod(this, "onTelemetryStarted", Qt::QueuedConnection);
+        telemetryHandler->start();
     });
-    telemetryThread->start(); // Thread'i başlatın
-
-
-
+    telemetryThread->start();
 
     mission = std::make_shared<mavsdk::Mission>(system);
 
     connectedStatus = true;
     emit connected();
+    logger->log("Successfully connected to UAV.", INFO);  // Log kaydı ekledik
 }
+
 
 void UAVManager::disconnectFromUAV() {
     if (connectedStatus) {
         connectedStatus = false;
-        qDebug() <<"disconneect";
+        logger->log("Disconnecting from UAV.", INFO);  // Log kaydı ekledik
 
         mavsdk->remove_connection(myConnectionHandle);
 
@@ -177,62 +155,55 @@ void UAVManager::disconnectFromUAV() {
 
 void UAVManager::arm() {
     if (!action) {
-        qDebug() << "Action nesnesi henüz oluşturulmadı.";
+        logger->log("Action object not created yet.", ERROR);
         return;
     }
 
     auto result = action->arm();
     if (result != mavsdk::Action::Result::Success) {
-        qDebug() << "UAV arm edilemedi. Hata:" ;
+        logger->log("Failed to arm UAV.", ERROR);
         return;
     }
 
-    qDebug() << "UAV başarıyla arm edildi.";
-
-
-
-
+    logger->log("UAV successfully armed.", INFO);
 }
 
 void UAVManager::takeoff(qint32 takeoff_height) {
     if (!action) {
-        qDebug() << "Action nesnesi henüz oluşturulmadı.";
+        logger->log("Action object not created yet.", ERROR);
         return;
     }
 
-    // Kalkış yüksekliği ayarlanıyor
     auto result = action->set_takeoff_altitude(static_cast<float>(takeoff_height));
     if (result != mavsdk::Action::Result::Success) {
-        qDebug() << "Kalkış yüksekliği ayarlanamadı. Hata:" ;
+        logger->log("Failed to set takeoff altitude.", ERROR);
         return;
     }
 
-    qDebug() << "Kalkış yüksekliği " << takeoff_height << " metre olarak ayarlandı.";
+    logger->log("Takeoff altitude set to " + QString::number(takeoff_height) + " meters.", INFO);
 
     result = action->takeoff();
     if (result != mavsdk::Action::Result::Success) {
-        qDebug() << "Takeoff işlemi başarısız. Hata:" ;
+        logger->log("Takeoff failed.", ERROR);
     } else {
-        qDebug() << "Takeoff işlemi başarılı.";
+        logger->log("Takeoff successful.", INFO);
     }
 }
-
 
 
 void UAVManager::sendCoordinatesToUAV(double latitude, double longitude, double altitude, double speed, double yaw)
 {
     if (!mission) {
-        qDebug() << "Mission plugin'i başlatılamadı!";
+        logger->log("Mission plugin not initialized.", ERROR);
         return;
     }
 
-
     if (action) {
-        auto result = action->set_current_speed((float) speed); // 10 m/s olarak ayarla
+        auto result = action->set_current_speed((float) speed);
         if (result == mavsdk::Action::Result::Success) {
-            qDebug() << "UAV hızı başarıyla değiştirildi!";
+            logger->log("UAV speed successfully changed.", INFO);
         } else {
-            qDebug() << "Hız değiştirilemedi, hata kodu:" << static_cast<int>(result);
+            logger->log("Failed to change speed, error code: " + QString::number(static_cast<int>(result)), ERROR);
         }
     }
 
@@ -245,41 +216,32 @@ void UAVManager::sendCoordinatesToUAV(double latitude, double longitude, double 
     mission_item.acceptance_radius_m = (float)1.0;
     mission_item.yaw_deg = (float)yaw;
 
-
-
     std::vector<Mission::MissionItem> mission_items;
     mission_items.push_back(mission_item);
 
     Mission::MissionPlan mission_plan;
     mission_plan.mission_items = mission_items;
 
-    // Yeni bir thread oluşturarak görev yükleme ve başlatma işlemlerini yap
     QThread *missionThread = QThread::create([this, mission_plan]() {
         auto result = mission->upload_mission(mission_plan);
         if (result != mavsdk::Mission::Result::Success) {
-            qDebug() << "Görev yükleme hatası: " << static_cast<int>(result);
+            logger->log("Mission upload failed, error code: " + QString::number(static_cast<int>(result)), ERROR);
             return;
         }
 
-        qDebug() << "Görev başarıyla yüklendi!";
+        logger->log("Mission successfully uploaded.", INFO);
 
         result = mission->start_mission();
         if (result != mavsdk::Mission::Result::Success) {
-            qDebug() << "Görev başlatma hatası: " << static_cast<int>(result);
+            logger->log("Failed to start mission, error code: " + QString::number(static_cast<int>(result)), ERROR);
             return;
         }
 
-        qDebug() << "Görev başlatıldı!";
+        logger->log("Mission started.", INFO);
     });
 
     missionThread->start();
 }
-
-
-
-
-
-
 
 
 

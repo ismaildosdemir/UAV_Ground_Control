@@ -107,8 +107,7 @@ void Logger::appendLogMessage(const QString &message , QPlainTextEdit *logTextEd
 
     // Format log message
     QString formattedMessage = QString("<font color=\"%1\">[%2]</font>")
-                                   .arg(logColor)
-                                   .arg(message);
+                                   .arg(logColor, message);
 
     // Append to the log text edit
     logTextEdit->appendHtml(formattedMessage);

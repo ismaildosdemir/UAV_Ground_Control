@@ -18,62 +18,38 @@ MainWindow::MainWindow(QWidget *parent)
     , videoWidget(new QVideoWidget(this))
     ,captureSession(new QMediaCaptureSession(this))
 {
-    // UI öğelerini başlat
     ui->setupUi(this);
+    Logger::instance().log("MainWindow oluşturuldu.");
 
-
-    // Logger mesajı
-    //Logger::instance().log("MainWindow oluşturuldu.");
-
-    // Signal-slot bağlantıları
     setupConnections();
-
-    // Bağlantı ve baudrate listeleme fonksiyonu çağrısı
     listSerialPortsAndConnections();
 
-
-    // // Subscribe to MAVSDK log messages
-    // mavsdk::log::subscribe([this](mavsdk::log::Level level, const std::string& message, const std::string&, int) {
-    //     // Print log message to console for debugging
-    //     Logger::instance().appendLogMessage(QString::fromStdString(message),ui->plainTextEdit,"",level);
-    //     // Return true to prevent default MAVSDK logging to stdout
-    //     return true;
-    // });
-
-
-    // UI'deki videoFrame'i ve videoWidget'ı hazırlayın
     QVBoxLayout *layout = new QVBoxLayout(ui->videoFrame);
     layout->addWidget(videoWidget);
     ui->videoFrame->setLayout(layout);
-    videoWidget->hide();   // Video alanını gizle
+    videoWidget->hide();
 
-
-    // Saati hemen göster
     showTime();
-    // QTimer ile saati her saniye güncelle
     QTimer *timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &MainWindow::showTime);
-    timer->start(1000); // 1000 ms = 1 saniye
-
-
-
+    timer->start(1000);
 
     ui->armStringLabel->setAlignment(Qt::AlignCenter);
     ui->flightModeLabel->setAlignment(Qt::AlignCenter);
 
-    ui->quickWidget->rootContext()->setContextProperty("mapFunction", this); // qml haritanın mainwindow sınıfındaki fonksiyonlara erişimine "mapFunction" adı altında izin verir
-
-
+    ui->quickWidget->rootContext()->setContextProperty("mapFunction", this);
 }
 
 MainWindow::~MainWindow()
 {
-    //Logger::instance().log("MainWindow yok ediliyor.");
+    Logger::instance().log("MainWindow yok ediliyor.");
     delete ui;
 }
 
+
 void MainWindow::setupConnections()
 {
+    Logger::instance().log("setupConnections: Bağlantılar kuruluyor...");
 
     // "Connect UAV" butonuna tıklama olayını bağla
     connect(ui->connectPushButton, &QPushButton::clicked, this, [=]() {
@@ -81,28 +57,30 @@ void MainWindow::setupConnections()
             QString portName = ui->connectionComboBox->currentText();
             QString baudRate = ui->baundComboBox->currentText();
 
-            // UAVManager üzerinden bağlantıyı başlat
+            Logger::instance().log("UAV bağlantı isteği gönderildi: Port=" + portName + ", Baud=" + baudRate);
             uavManager->connectToUAV(portName, baudRate);
         }
         else {
-            // Bağlantıyı kesme isteği
+            Logger::instance().log("UAV bağlantısı kesme isteği gönderildi.");
             uavManager->disconnectFromUAV();
         }
     });
 
     // Bağlanma sinyalini dinle
     connect(uavManager, &UAVManager::connected, this, [=]() {
-        ui->connectPushButton->setText("Disconnect UAV"); // Buton metnini güncelle
+        ui->connectPushButton->setText("Disconnect UAV");
         ui->connectionStatusLabel->setText("CONNECTED");
         ui->connectionStatusLabel->setStyleSheet("color: rgb(34, 177, 76); font: 700 10pt 'Segoe UI';");
+        Logger::instance().log("UAV bağlantısı başarılı.");
         qDebug() << "UAV başarıyla bağlandı!";
     });
 
     // Bağlantı kesilme sinyalini dinle
     connect(uavManager, &UAVManager::disconnected, this, [=]() {
-        ui->connectPushButton->setText("Connect UAV"); // Buton metnini güncelle
+        ui->connectPushButton->setText("Connect UAV");
         ui->connectionStatusLabel->setText("NOT CONNECTED !!!");
         ui->connectionStatusLabel->setStyleSheet("color: rgb(255, 19, 90); font: 700 10pt 'Segoe UI';");
+        Logger::instance().log("UAV bağlantısı kesildi.");
         qDebug() << "UAV bağlantısı kesildi.";
     });
 
@@ -111,79 +89,65 @@ void MainWindow::setupConnections()
     connect(ui->cameraConnectPushButton, &QPushButton::clicked, this, &MainWindow::cameraConnectPushButton_clicked);
 
     connect(cameraManager, &CameraManager::cameraStarted, this, [this](const QString &cameraName) {
-        ui->cameraConnectPushButton->setText("Disconnect Camera"); // Buton metnini güncelle
-        videoWidget->show();   // Yeniden göster
+        ui->cameraConnectPushButton->setText("Disconnect Camera");
+        videoWidget->show();
+        Logger::instance().log("Kamera açıldı: " + cameraName);
         qDebug() << "Kamera açıldı: " << cameraName;
     });
 
     connect(cameraManager, &CameraManager::cameraStopped, this, [this]() {
-        ui->cameraConnectPushButton->setText("Connect Camera"); // Buton metnini güncelle
-        videoWidget->hide();   // Video alanını gizle
-        qDebug() << "Kamera kapandı: ";
+        ui->cameraConnectPushButton->setText("Connect Camera");
+        videoWidget->hide();
+        Logger::instance().log("Kamera kapandı.");
+        qDebug() << "Kamera kapandı.";
     });
 
     connect(ui->refreshPortsPushButton, &QPushButton::clicked, this, &MainWindow::listSerialPortsAndConnections);
 
-    connect(ui->armPushButton, &QPushButton::clicked, this, [this]() { uavManager->arm(); });
+    connect(ui->armPushButton, &QPushButton::clicked, this, [this]() {
+        Logger::instance().log("UAV arm isteği gönderildi.");
+        uavManager->arm();
+    });
+
     connect(ui->takeoffPushButton, &QPushButton::clicked, this, [this]() {
-        int takeoffHeight = ui->altitudeSpinBox->value();  // SpinBox'tan değeri al
-        uavManager->takeoff(takeoffHeight);  // Değeri takeoff fonksiyonuna ilet
+        int takeoffHeight = ui->altitudeSpinBox->value();
+        Logger::instance().log("UAV kalkış isteği gönderildi. Yükseklik: " + QString::number(takeoffHeight));
+        uavManager->takeoff(takeoffHeight);
     });
 
     connect(ui->headTowardsPushButton, &QPushButton::clicked, this, [this]() {
-        int takeoffHeight = ui->altitudeSpinBox->value();  // SpinBox'tan değeri al
-        int speed = ui->speedSpinBox->value();  // SpinBox'tan değeri al
-        int yaw = ui->yawSpinBox->value();  // SpinBox'tan değeri al
+        int takeoffHeight = ui->altitudeSpinBox->value();
+        int speed = ui->speedSpinBox->value();
+        int yaw = ui->yawSpinBox->value();
 
-        uavManager->sendCoordinatesToUAV(togoLat, togoLon, takeoffHeight, speed, yaw);  // Değeri takeoff fonksiyonuna ilet
+        Logger::instance().log("UAV hedefe yönlendirme isteği gönderildi. Yükseklik: " + QString::number(takeoffHeight) +
+                               ", Hız: " + QString::number(speed) + ", Yaw: " + QString::number(yaw));
+
+        uavManager->sendCoordinatesToUAV(togoLat, togoLon, takeoffHeight, speed, yaw);
     });
 
-
-
-
-    //Logger::instance().log("Signal-slot bağlantıları ayarlandı.");
+    Logger::instance().log("setupConnections: Tüm bağlantılar başarıyla kuruldu.");
 }
 
-void MainWindow::listSerialPortsAndConnections() {
 
-    // Yeni portları temizle
+void MainWindow::listSerialPortsAndConnections()
+{
+    Logger::instance().log("Bağlantı noktaları ve baud rate listeleniyor.");
     ui->connectionComboBox->clear();
-    // Bağlantılı olan COM portlarını al
     QList<QSerialPortInfo> ports = QSerialPortInfo::availablePorts();
-    // COM portlarını connectionComboBox'a ekle
     for (const QSerialPortInfo &port : ports) {
-        // Bağlı port adlarını ekleyelim (örneğin /dev/ttyUSB0)
         ui->connectionComboBox->addItem(port.portName());
     }
-    // Açık bağlantılar için simülasyon modunu connectionComboBox'a ekleyelim
-    // Örneğin, Simülasyon bağlantısı 'udp://:14550'
     ui->connectionComboBox->addItem("Simulation");
-
-
-
-    // Baud rate listesi, örneğin:
     ui->baundComboBox->clear();
-    ui->baundComboBox->addItem("9600");
-    ui->baundComboBox->addItem("19200");
-    ui->baundComboBox->addItem("38400");
-    ui->baundComboBox->addItem("57600");
-    ui->baundComboBox->addItem("115200");
-    ui->baundComboBox->addItem("14550");
-
-
-
-    // Kameraları combobox'a yükleme
+    ui->baundComboBox->addItems({"9600", "19200", "38400", "57600", "115200", "14550"});
     ui->cameraComboBox->clear();
-    QStringList cameras = cameraManager->availableCameras();
-    ui->cameraComboBox->addItems(cameras);
-
+    ui->cameraComboBox->addItems(cameraManager->availableCameras());
 }
-
 
 
 
 void MainWindow::updateTelemetryData() {
-
 
 
     auto& telemetryHandler = uavManager->getTelemetryHandler();
@@ -260,14 +224,9 @@ void MainWindow::updateTelemetryData() {
     auto RcStatus = telemetryHandler->getRcStatus();
     ui->signalLabel->setText(QString::number(RcStatus.signal_strength_percent, 'f', 2) + "%" );
 
-
-
-
-
-
-
-
 }
+
+
 
 void MainWindow::setLabel(QLabel* label, bool condition, const QString& trueText, const QString& falseText,
                           const QString& fontFamily, int fontSize, int fontWeight) {
@@ -284,40 +243,42 @@ void MainWindow::setLabel(QLabel* label, bool condition, const QString& trueText
 
 
 void MainWindow::onUAVConnected() {
+    Logger::instance().log("UAV bağlantı işlemi başlatıldı.");
 
     // UAV bağlandıktan sonra telemetri sinyalini güncelleme fonksiyonuna bağla
     auto& telemetryHandler = uavManager->getTelemetryHandler();
 
     if (!telemetryHandler) {
+        Logger::instance().log("HATA: TelemetryHandler bulunamadı!", ERROR);
         qDebug() << "TelemetryHandler bulunamadı!";
         return;
     }
 
     bool connected = connect(telemetryHandler.get(), &TelemetryHandler::telemetryDataUpdated, this, &MainWindow::updateTelemetryData);
+
     if (!connected) {
+        Logger::instance().log("HATA: Telemetri sinyali bağlantısı başarısız!", ERROR);
         qDebug() << "Sinyal bağlantısı başarısız!";
     } else {
+        Logger::instance().log("Telemetri sinyali bağlantısı başarılı.");
         qDebug() << "Sinyal bağlantısı başarılı!";
     }
 
-
+    Logger::instance().log("TelemetryHandler sinyali updateTelemetryData fonksiyonuna bağlandı.");
     qDebug() << "TelemetryHandler sinyali updateTelemetryData fonksiyonuna bağlandı.";
 }
 
+
 void MainWindow::cameraConnectPushButton_clicked()
 {
-// camera is connect? if/else
     if (cameraManager->isCameraConnected()) {
-    cameraManager->disconnectCamera();
-
+        Logger::instance().log("Kamera bağlantısı kesiliyor.");
+        cameraManager->disconnectCamera();
     } else {
         QString cameraName = ui->cameraComboBox->currentText();
+        Logger::instance().log("Kamera bağlanıyor: " + cameraName);
         cameraManager->connectToCamera(cameraName);
-
-        // UAVManager'dan captureSession alın
-        captureSession = cameraManager->getCaptureSession(); // UAVManager'dan captureSession alın
-
-        // CaptureSession'ı videoWidget ile ilişkilendir
+        captureSession = cameraManager->getCaptureSession();
         captureSession->setVideoOutput(videoWidget);
     }
 }
@@ -330,22 +291,17 @@ void MainWindow::showTime(){
 
 void MainWindow::updateCoordinates(double lat, double lon)
 {
-    togoLat=lat;
-    togoLon=lon;
-    /// haritadan işaretlenen kordinatı işle
-
-    // qDebug() ile koordinatları yazdırmak
-    qDebug() << "Latitude: " << lat << "Longitude: " << lon;
-
+    togoLat = lat;
+    togoLon = lon;
+    Logger::instance().log("Yeni hedef koordinatlar: " + QString::number(lat) + ", " + QString::number(lon));
     ui->coordinateLabel->setText(QString("%1  %2").arg(lat).arg(lon));
 }
 
 
 void MainWindow::updateUAVPosition(double latitude, double longitude, double headingDegrees)
 {
+    Logger::instance().log("UAV pozisyon güncellemesi: " + QString::number(latitude) + ", " + QString::number(longitude) + " Heading: " + QString::number(headingDegrees));
     QObject *rootObject = ui->quickWidget->rootObject();
-
-    // QML'deki updateUAVCoordinate fonksiyonunu çağır
     QMetaObject::invokeMethod(rootObject, "updateUAVCoordinate",
                               Q_ARG(QVariant, latitude),
                               Q_ARG(QVariant, longitude),
