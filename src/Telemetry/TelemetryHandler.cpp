@@ -23,6 +23,7 @@ void TelemetryHandler::start() {
     }
 
     Logger::instance().log("Telemetry verileri başlatılıyor...", INFO);  // Log: Başlatılıyor
+
     subscribePosition();
     subscribeheading();
     subscribeAttitude();
@@ -34,6 +35,7 @@ void TelemetryHandler::start() {
     subscribeTotalSpeed();
     subscribeHealth(); // Sağlık durumu aboneliği
     subscribeConnnectionState();
+    subscribeLog();
 }
 
 // Getter fonksiyonları
@@ -80,6 +82,12 @@ mavsdk::Telemetry::Health TelemetryHandler::getHealth() const {
 mavsdk::Telemetry::RcStatus TelemetryHandler::getRcStatus() const {
     return rcStatus;
 }
+
+std::pair<QString, mavsdk::log::Level> TelemetryHandler::getLastLog() const {
+    return {lastLogMessage, lastLogLevel};
+}
+
+
 
 // Telemetry verileri için abonelik fonksiyonları
 void TelemetryHandler::subscribePosition() {
@@ -156,6 +164,8 @@ void TelemetryHandler::subscribeHealth() {
     });
 }
 
+
+
 // USB telemetry dene, simülasyonda is_available hep false geliyor
 void TelemetryHandler::subscribeConnnectionState() {
     telemetry->subscribe_rc_status([this](mavsdk::Telemetry::RcStatus rc_status) {
@@ -169,6 +179,33 @@ void TelemetryHandler::subscribeConnnectionState() {
     });
 }
 
+void TelemetryHandler::subscribeLog() {
+
+    mavsdk::log::subscribe([this](mavsdk::log::Level level,   // message severity level
+                              const std::string& message, // message text
+                              const std::string& file,    // source file from which the message was sent
+                              int line) {                 // line number in the source file
+        // process the log message in a way you like
+
+
+
+        // Mesajı QString'e çevir ve kaydet
+        lastLogMessage = QString::fromStdString(message);
+        lastLogLevel = level;
+
+        Logger::instance().log("MAVSDK: " + lastLogMessage, level);
+
+        emit UavLogDataUpdated();
+
+        // returning true from the callback disables printing the message to stdout
+        return true;
+    });
+
+}
+
+
+
+
 QString TelemetryHandler::flightModeToString(mavsdk::Telemetry::FlightMode mode) {
     switch (mode) {
     case mavsdk::Telemetry::FlightMode::Unknown: return "Unknown";
@@ -176,7 +213,7 @@ QString TelemetryHandler::flightModeToString(mavsdk::Telemetry::FlightMode mode)
     case mavsdk::Telemetry::FlightMode::Takeoff: return "Takeoff";
     case mavsdk::Telemetry::FlightMode::Hold: return "Hold";
     case mavsdk::Telemetry::FlightMode::Mission: return "Mission";
-    case mavsdk::Telemetry::FlightMode::ReturnToLaunch: return "Return to Launch";
+    case mavsdk::Telemetry::FlightMode::ReturnToLaunch: return "RTL";
     case mavsdk::Telemetry::FlightMode::Land: return "Land";
     case mavsdk::Telemetry::FlightMode::Offboard: return "Offboard";
     case mavsdk::Telemetry::FlightMode::FollowMe: return "Follow Me";
@@ -186,7 +223,7 @@ QString TelemetryHandler::flightModeToString(mavsdk::Telemetry::FlightMode mode)
     case mavsdk::Telemetry::FlightMode::Acro: return "Acro";
     case mavsdk::Telemetry::FlightMode::Stabilized: return "Stabilized";
     case mavsdk::Telemetry::FlightMode::Rattitude: return "Rattitude";
-    default: return "Unknown Flight Mode";
+    default: return "Unknown Mode";
     }
 }
 

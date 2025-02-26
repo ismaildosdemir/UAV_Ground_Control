@@ -63,7 +63,7 @@ QString connectionResultToString(ConnectionResult result) {
 void UAVManager::connectToUAV(const QString &portName, const QString &baudRate) {
     if (connectedStatus) {
         emit connected();
-        logger->log("Already connected to UAV.", INFO); // Log kaydı ekledik
+        Logger::instance().log("Already connected to UAV.", INFO); // Log kaydı ekledik
         return;
     }
 
@@ -75,7 +75,7 @@ void UAVManager::connectToUAV(const QString &portName, const QString &baudRate) 
 
     auto [connectionResult, tempHandle] = mavsdk->add_any_connection_with_handle(connectionString.toStdString());
     if (connectionResult != ConnectionResult::Success) {
-        logger->log("Connection failed! Error message: " + connectionResultToString(connectionResult), ERROR);
+        Logger::instance().log("Connection failed! Error message: " + connectionResultToString(connectionResult), ERROR);
         return;
     }
     myConnectionHandle = tempHandle;
@@ -90,14 +90,14 @@ void UAVManager::connectToUAV(const QString &portName, const QString &baudRate) 
     }
 
     if (!isConnected) {
-        logger->log("Failed to connect, UAV not found.", ERROR);
+        Logger::instance().log("Failed to connect, UAV not found.", ERROR);
         mavsdk->remove_connection(myConnectionHandle);
         return;
     }
 
     system = mavsdk->systems().at(0);
     if (!system) {
-        logger->log("Failed to initialize system.", ERROR);
+        Logger::instance().log("Failed to initialize system.", ERROR);
         mavsdk->remove_connection(myConnectionHandle);
         system.reset();
         return;
@@ -105,7 +105,7 @@ void UAVManager::connectToUAV(const QString &portName, const QString &baudRate) 
 
     action = std::make_shared<mavsdk::Action>(system);
     if (!action) {
-        logger->log("Failed to initialize Action plugin.", ERROR);
+        Logger::instance().log("Failed to initialize Action plugin.", ERROR);
         mavsdk->remove_connection(myConnectionHandle);
         action.reset();
         system.reset();
@@ -114,7 +114,7 @@ void UAVManager::connectToUAV(const QString &portName, const QString &baudRate) 
 
     telemetry = std::make_shared<mavsdk::Telemetry>(system);
     if (!telemetry) {
-        logger->log("Failed to initialize Telemetry plugin.", ERROR);
+        Logger::instance().log("Failed to initialize Telemetry plugin.", ERROR);
         mavsdk->remove_connection(myConnectionHandle);
         telemetry.reset();
         system.reset();
@@ -133,14 +133,16 @@ void UAVManager::connectToUAV(const QString &portName, const QString &baudRate) 
 
     connectedStatus = true;
     emit connected();
-    logger->log("Successfully connected to UAV.", INFO);  // Log kaydı ekledik
+
+    // burda log eklenemez. connected sinyalinin tetiklenmesi ile de başka loglar kaydedildiği için log dosyasında çakışmalar oluyor ve program çöküyor.
+    //Logger::instance().log("Successfully connected to UAV.", INFO);
 }
 
 
 void UAVManager::disconnectFromUAV() {
     if (connectedStatus) {
         connectedStatus = false;
-        logger->log("Disconnecting from UAV.", INFO);  // Log kaydı ekledik
+        Logger::instance().log("Disconnecting from UAV.", INFO);  // Log kaydı ekledik
 
         mavsdk->remove_connection(myConnectionHandle);
 
@@ -155,38 +157,38 @@ void UAVManager::disconnectFromUAV() {
 
 void UAVManager::arm() {
     if (!action) {
-        logger->log("Action object not created yet.", ERROR);
+        Logger::instance().log("Action object not created yet.", ERROR);
         return;
     }
 
     auto result = action->arm();
     if (result != mavsdk::Action::Result::Success) {
-        logger->log("Failed to arm UAV.", ERROR);
+        Logger::instance().log("Failed to arm UAV.", ERROR);
         return;
     }
 
-    logger->log("UAV successfully armed.", INFO);
+    Logger::instance().log("UAV successfully armed.", INFO);
 }
 
 void UAVManager::takeoff(qint32 takeoff_height) {
     if (!action) {
-        logger->log("Action object not created yet.", ERROR);
+        Logger::instance().log("Action object not created yet.", ERROR);
         return;
     }
 
     auto result = action->set_takeoff_altitude(static_cast<float>(takeoff_height));
     if (result != mavsdk::Action::Result::Success) {
-        logger->log("Failed to set takeoff altitude.", ERROR);
+        Logger::instance().log("Failed to set takeoff altitude.", ERROR);
         return;
     }
 
-    logger->log("Takeoff altitude set to " + QString::number(takeoff_height) + " meters.", INFO);
+    Logger::instance().log("Takeoff altitude set to " + QString::number(takeoff_height) + " meters.", INFO);
 
     result = action->takeoff();
     if (result != mavsdk::Action::Result::Success) {
-        logger->log("Takeoff failed.", ERROR);
+        Logger::instance().log("Takeoff failed.", ERROR);
     } else {
-        logger->log("Takeoff successful.", INFO);
+        Logger::instance().log("Takeoff successful.", INFO);
     }
 }
 
@@ -194,16 +196,16 @@ void UAVManager::takeoff(qint32 takeoff_height) {
 void UAVManager::sendCoordinatesToUAV(double latitude, double longitude, double altitude, double speed, double yaw)
 {
     if (!mission) {
-        logger->log("Mission plugin not initialized.", ERROR);
+        Logger::instance().log("Mission plugin not initialized.", ERROR);
         return;
     }
 
     if (action) {
         auto result = action->set_current_speed((float) speed);
         if (result == mavsdk::Action::Result::Success) {
-            logger->log("UAV speed successfully changed.", INFO);
+            Logger::instance().log("UAV speed successfully changed.", INFO);
         } else {
-            logger->log("Failed to change speed, error code: " + QString::number(static_cast<int>(result)), ERROR);
+            Logger::instance().log("Failed to change speed, error code: " + QString::number(static_cast<int>(result)), ERROR);
         }
     }
 
@@ -225,19 +227,19 @@ void UAVManager::sendCoordinatesToUAV(double latitude, double longitude, double 
     QThread *missionThread = QThread::create([this, mission_plan]() {
         auto result = mission->upload_mission(mission_plan);
         if (result != mavsdk::Mission::Result::Success) {
-            logger->log("Mission upload failed, error code: " + QString::number(static_cast<int>(result)), ERROR);
+            Logger::instance().log("Mission upload failed, error code: " + QString::number(static_cast<int>(result)), ERROR);
             return;
         }
 
-        logger->log("Mission successfully uploaded.", INFO);
+        Logger::instance().log("Mission successfully uploaded.", INFO);
 
         result = mission->start_mission();
         if (result != mavsdk::Mission::Result::Success) {
-            logger->log("Failed to start mission, error code: " + QString::number(static_cast<int>(result)), ERROR);
+            Logger::instance().log("Failed to start mission, error code: " + QString::number(static_cast<int>(result)), ERROR);
             return;
         }
 
-        logger->log("Mission started.", INFO);
+        Logger::instance().log("Mission started.", INFO);
     });
 
     missionThread->start();

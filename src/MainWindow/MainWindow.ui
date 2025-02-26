@@ -854,7 +854,7 @@ color: rgb(192, 191, 188);</string>
       <string>TextLabel</string>
      </property>
     </widget>
-    <widget class="QPlainTextEdit" name="plainTextEdit">
+    <widget class="QPlainTextEdit" name="MavsdkPlainTextEdit">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -1095,7 +1095,7 @@ color: rgb(192, 191, 188);</string>
      </property>
     </widget>
     <zorder>label_2</zorder>
-    <zorder>plainTextEdit</zorder>
+    <zorder>MavsdkPlainTextEdit</zorder>
     <zorder>gyroTextLabel</zorder>
     <zorder>accelTextLabel</zorder>
     <zorder>magTextLabel</zorder>

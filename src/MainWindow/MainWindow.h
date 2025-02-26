@@ -30,8 +30,11 @@ private:
     void setupConnections(); // Signal-slot bağlantıları için bir yardımcı fonksiyon
     void listSerialPortsAndConnections();
     void showTime();
-    Logger *logger;  // Logger sınıfının bir örneği
+    //Logger *logger;  // Logger sınıfının bir örneği
     // void updateTelemetryData();
+    void updateMavsdkPlainTextEdit();
+    void updateTelemetryData();
+
     void onUAVConnected();
     CameraManager *cameraManager;
     void cameraConnectPushButton_clicked();
@@ -48,7 +51,6 @@ private slots:
 
 
 public slots:
-    void updateTelemetryData();
     void updateCoordinates(double latitude, double longitude);
 };
 

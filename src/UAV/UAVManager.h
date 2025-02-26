@@ -51,7 +51,7 @@ private:
     std::shared_ptr<mavsdk::System> system;
     std::shared_ptr<mavsdk::Action> action;
     std::shared_ptr<mavsdk::Telemetry> telemetry;
-    Logger *logger;  // Logger sınıfının bir örneği
+    //Logger *logger;  // Logger sınıfının bir örneği
 };
 
 #endif // UAVMANAGER_H

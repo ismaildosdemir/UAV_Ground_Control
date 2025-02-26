@@ -228,6 +228,14 @@ void MainWindow::updateTelemetryData() {
 
 
 
+void MainWindow::updateMavsdkPlainTextEdit() {
+    auto& telemetryHandler = uavManager->getTelemetryHandler();
+    auto [message, level] = telemetryHandler->getLastLog();
+    Logger::instance().appendLogMessage(message ,ui->MavsdkPlainTextEdit, level);
+}
+
+
+
 void MainWindow::setLabel(QLabel* label, bool condition, const QString& trueText, const QString& falseText,
                           const QString& fontFamily, int fontSize, int fontWeight) {
     label->setText(condition ? trueText : falseText);
@@ -255,8 +263,12 @@ void MainWindow::onUAVConnected() {
     }
 
     bool connected = connect(telemetryHandler.get(), &TelemetryHandler::telemetryDataUpdated, this, &MainWindow::updateTelemetryData);
+    bool connectedMavsdk = connect(telemetryHandler.get(), &TelemetryHandler::UavLogDataUpdated, this, &MainWindow::updateMavsdkPlainTextEdit);
 
-    if (!connected) {
+
+
+
+    if (!connected && !connectedMavsdk) {
         Logger::instance().log("HATA: Telemetri sinyali bağlantısı başarısız!", ERROR);
         qDebug() << "Sinyal bağlantısı başarısız!";
     } else {
@@ -300,7 +312,7 @@ void MainWindow::updateCoordinates(double lat, double lon)
 
 void MainWindow::updateUAVPosition(double latitude, double longitude, double headingDegrees)
 {
-    Logger::instance().log("UAV pozisyon güncellemesi: " + QString::number(latitude) + ", " + QString::number(longitude) + " Heading: " + QString::number(headingDegrees));
+    //Logger::instance().log("UAV pozisyon güncellemesi: " + QString::number(latitude) + ", " + QString::number(longitude) + " Heading: " + QString::number(headingDegrees));
     QObject *rootObject = ui->quickWidget->rootObject();
     QMetaObject::invokeMethod(rootObject, "updateUAVCoordinate",
                               Q_ARG(QVariant, latitude),

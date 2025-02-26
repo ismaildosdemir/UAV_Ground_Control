@@ -8,13 +8,15 @@
 #include <QDateTime>
 #include <QMutex>
 #include <QDir>
+#include <QFileInfo>
 #include <mavsdk/log_callback.h>
 
 // Log seviyelerini tanımlıyoruz
 enum LogLevel {
     INFO,
     DEBUG,
-    ERROR
+    ERROR,
+    WARNING
 };
 
 class Logger
@@ -25,9 +27,22 @@ public:
 
     // Log mesajlarını dosyaya yazmak için kullanılan fonksiyon
     void log(const QString &message, LogLevel level = INFO);
+    void log(const QString &message, mavsdk::log::Level mavsdkLevel); // MAVSDK overload
 
     // Log dosyasının yolunu değiştirmek için bir fonksiyon
     void setLogFilePath(const QString &path);
+
+    // MAVSDK log seviyelerini Logger seviyelerine dönüştüren yardımcı fonksiyon
+    static LogLevel mavsdkLogLevelToLogger(mavsdk::log::Level mavsdkLevel);
+
+    void appendLogMessage(const QString &message,
+                          QPlainTextEdit *logTextEdit,
+                          const QString &logLevel);
+
+    void appendLogMessage(const QString &message,
+                          QPlainTextEdit *logTextEdit,
+                          mavsdk::log::Level level);
+
 
 private:
     Logger(); // Constructor'u private yaparak tekil (singleton) olmasını sağlarız.
@@ -41,20 +56,11 @@ private:
     QFile logFile;
 
     // Mutex nesnesi - paralel yazma işlemleri için
-    QMutex mutex;
+    static QMutex mutex;
 
     // Log dosyasının rotasyonu için kullanılan fonksiyon
     void rotateLogFile();
     QString levelToString(mavsdk::log::Level level);
-
-    //void appendLogMessage(const QString &message, QPlainTextEdit *logTextEdit, const QString &logLevel = "", mavsdk::log::Level level = mavsdk::log::Level::Info);
-
-
-public slots:
-    void appendLogMessage(const QString &message,
-                          QPlainTextEdit *logTextEdit,
-                          const QString &logLevel,
-                          mavsdk::log::Level level);
 
 
 };

@@ -4,6 +4,7 @@
 #include <QObject>
 #include <mavsdk/plugins/telemetry/telemetry.h>
 #include <memory>
+#include <mavsdk/log_callback.h>
 
 // TelemetryHandler sınıfı
 class TelemetryHandler : public QObject {
@@ -29,10 +30,12 @@ public:
     double getTotalSpeed() const;
     mavsdk::Telemetry::Health getHealth() const;  // Sağlık durumu getter'ı
     mavsdk::Telemetry::RcStatus getRcStatus() const;
+    std::pair<QString, mavsdk::log::Level> getLastLog() const; // Tek fonksiyonla hem mesaj hem seviyeyi almak
 
 signals:
     // Sinyaller
     void telemetryDataUpdated();
+    void UavLogDataUpdated();
 
 private:
     // Telemetry referansı
@@ -52,6 +55,9 @@ private:
     bool armed = false;
     double totalSpeed = 0.0;
 
+    QString lastLogMessage;  // Son log mesajını saklamak için
+    mavsdk::log::Level lastLogLevel; // Son log seviyesini saklamak için
+
     // Telemetry verilerini güncelleyen yardımcı fonksiyonlar
     void subscribePosition();
     void subscribeheading();
@@ -64,6 +70,7 @@ private:
     void subscribeTotalSpeed();
     void subscribeHealth();
     void subscribeConnnectionState();
+    void subscribeLog();
 
     QString flightModeToString(mavsdk::Telemetry::FlightMode mode);
 
