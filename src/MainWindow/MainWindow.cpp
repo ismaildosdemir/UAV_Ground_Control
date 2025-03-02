@@ -38,6 +38,15 @@ MainWindow::MainWindow(QWidget *parent)
     ui->flightModeLabel->setAlignment(Qt::AlignCenter);
 
     ui->quickWidget->rootContext()->setContextProperty("mapFunction", this);
+
+    bool connectedStatus = connect(
+        &Logger::instance(),              // Logger'ın örneği
+        &Logger::StatusDataUpdated,       // Logger sınıfındaki sinyal
+        this,                             // MainWindow nesnesi
+        &MainWindow::updatestatusControlTextEdit  // Slot fonksiyon
+        );
+
+
 }
 
 MainWindow::~MainWindow()
@@ -233,6 +242,17 @@ void MainWindow::updateMavsdkPlainTextEdit() {
     auto [message, level] = telemetryHandler->getLastLog();
     Logger::instance().appendLogMessage(message ,ui->MavsdkPlainTextEdit, level);
 }
+
+
+void MainWindow::updatestatusControlTextEdit() {
+
+    auto [message, level] = Logger::instance().getLastLog();
+
+    Logger::instance().appendLogMessage(message ,ui->statusControlTextEdit, level);
+}
+
+
+
 
 
 

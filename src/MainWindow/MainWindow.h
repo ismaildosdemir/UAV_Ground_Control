@@ -35,6 +35,10 @@ private:
     void updateMavsdkPlainTextEdit();
     void updateTelemetryData();
 
+    void updatestatusControlTextEdit();
+
+
+
     void onUAVConnected();
     CameraManager *cameraManager;
     void cameraConnectPushButton_clicked();

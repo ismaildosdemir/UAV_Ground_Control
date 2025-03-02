@@ -1,7 +1,8 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
-#include "qplaintextedit.h"
+#include <QObject>
+#include <QPlainTextEdit>
 #include <QString>
 #include <QFile>
 #include <QTextStream>
@@ -19,8 +20,10 @@ enum LogLevel {
     WARNING
 };
 
-class Logger
+class Logger : public QObject // QObject'ten türetildi
 {
+    Q_OBJECT  // Sinyal-slot kullanabilmek için bu makro gerekli
+
 public:
     // Logger sınıfının tek örneğini almak için kullanılan fonksiyon
     static Logger& instance();
@@ -37,12 +40,15 @@ public:
 
     void appendLogMessage(const QString &message,
                           QPlainTextEdit *logTextEdit,
-                          const QString &logLevel);
+                          const LogLevel &logLevel);
 
     void appendLogMessage(const QString &message,
                           QPlainTextEdit *logTextEdit,
                           mavsdk::log::Level level);
 
+    QString lastStatusMessage;  // Son durum mesajını saklamak için
+    LogLevel lastStatusLevel; // Son durum seviyesini saklamak için
+    std::pair<QString, LogLevel> getLastLog() const;
 
 private:
     Logger(); // Constructor'u private yaparak tekil (singleton) olmasını sağlarız.
@@ -62,10 +68,8 @@ private:
     void rotateLogFile();
     QString levelToString(mavsdk::log::Level level);
 
+signals:
+    void StatusDataUpdated();  // Sinyal tanımlandı
 
 };
 #endif // LOGGER_H
-
-
-
-

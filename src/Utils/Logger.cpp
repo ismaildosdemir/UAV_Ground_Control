@@ -25,8 +25,26 @@ Logger& Logger::instance()
     return instance;
 }
 
+
+
+std::pair<QString, LogLevel> Logger::getLastLog() const {
+    return {lastStatusMessage, lastStatusLevel};
+}
+
+
+
+
 void Logger::log(const QString &message, LogLevel level)
 {
+
+
+
+
+    lastStatusMessage = message;  // Son durum mesajını saklamak için
+    lastStatusLevel = level; // Son durum seviyesini saklamak için
+    emit StatusDataUpdated();
+
+
     QMutexLocker locker(&mutex);  // Log yazarken eş zamanlı erişimi engellemek için
 
     if (!logFile.isOpen()) {
@@ -87,23 +105,31 @@ void Logger::rotateLogFile()
 }
 
 
-void Logger::appendLogMessage(const QString &message , QPlainTextEdit *logTextEdit, const QString &logLevel ) {
+void Logger::appendLogMessage(const QString &message , QPlainTextEdit *logTextEdit, const LogLevel &logLevel ) {
     // Get current date and time
 
     QString logColor;
 
-    // Determine log level color
-    if (logLevel == "Debug" ) {
-        logColor = "#ff7f50";
-    } else if (logLevel == "Info") {
-        logColor = "#7bed9f";
-    } else if (logLevel == "Warn" ) {
-        logColor = "#1e90ff";
-    } else if (logLevel == "Err" ) {
-        logColor = "#ff4757";
-    } else {
-        logColor = "black"; // Default color
+
+
+    switch (logLevel) {
+    case LogLevel::DEBUG:
+        logColor = "#ff7f50";  // Coral for Debug level
+        break;
+    case LogLevel::INFO:
+        logColor = "#7bed9f";  // Emerald for Info level
+        break;
+    case LogLevel::WARNING:
+        logColor = "#1e90ff";  // Dodger Blue for Warn level
+        break;
+    case LogLevel::ERROR:
+        logColor = "#ff4757";  // Red for Error level
+        break;
+    default:
+        logColor = "black";  // Default color if unknown log level
     }
+
+
 
     // Format log message
     QString formattedMessage = QString("<font color=\"%1\">[%2]</font>")
@@ -114,43 +140,10 @@ void Logger::appendLogMessage(const QString &message , QPlainTextEdit *logTextEd
 }
 
 void Logger::appendLogMessage(const QString &message , QPlainTextEdit *logTextEdit, mavsdk::log::Level level) {
-    // Get current date and time
 
-    QString logColor;
+    appendLogMessage(message , logTextEdit, mavsdkLogLevelToLogger(level));
 
-
-    // If logLevel is not provided, check the mavsdk::log::Level (enum) and assign color
-    switch (level) {
-    case mavsdk::log::Level::Debug:
-        logColor = "#ff7f50";  // Coral for Debug level
-        break;
-    case mavsdk::log::Level::Info:
-        logColor = "#7bed9f";  // Emerald for Info level
-        break;
-    case mavsdk::log::Level::Warn:
-        logColor = "#1e90ff";  // Dodger Blue for Warn level
-        break;
-    case mavsdk::log::Level::Err:
-        logColor = "#ff4757";  // Red for Error level
-        break;
-    default:
-        logColor = "black";  // Default color if unknown log level
-    }
-
-
-    // Format log message
-    QString formattedMessage = QString("<font color=\"%1\">[%2]</font>")
-                                   .arg(logColor, message);
-
-    // Append to the log text edit
-    logTextEdit->appendHtml(formattedMessage);
 }
-
-
-
-
-
-
 
 
 
