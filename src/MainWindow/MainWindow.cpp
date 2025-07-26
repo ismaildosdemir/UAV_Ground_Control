@@ -64,7 +64,7 @@ void MainWindow::setupConnections()
     connect(ui->connectPushButton, &QPushButton::clicked, this, [=]() {
         if (!uavManager->isConnected()) {
             QString portName = ui->connectionComboBox->currentText();
-            QString baudRate = ui->baundComboBox->currentText();
+            QString baudRate = ui->baudComboBox->currentText();
 
             Logger::instance().log("UAV bağlantı isteği gönderildi: Port=" + portName + ", Baud=" + baudRate);
             uavManager->connectToUAV(portName, baudRate);
@@ -148,8 +148,8 @@ void MainWindow::listSerialPortsAndConnections()
         ui->connectionComboBox->addItem(port.portName());
     }
     ui->connectionComboBox->addItem("Simulation");
-    ui->baundComboBox->clear();
-    ui->baundComboBox->addItems({"9600", "19200", "38400", "57600", "115200", "14550"});
+    ui->baudComboBox->clear();
+    ui->baudComboBox->addItems({"9600", "19200", "38400", "57600", "115200", "14550"});
     ui->cameraComboBox->clear();
     ui->cameraComboBox->addItems(cameraManager->availableCameras());
 }

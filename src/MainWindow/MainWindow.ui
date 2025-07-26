@@ -1406,7 +1406,7 @@ color: rgb(0, 0, 0);
 font: 700 11pt &quot;Segoe UI&quot;;</string>
       </property>
      </widget>
-     <widget class="QComboBox" name="baundComboBox">
+     <widget class="QComboBox" name="baudComboBox">
       <property name="geometry">
        <rect>
         <x>180</x>
@@ -1437,7 +1437,7 @@ font: 700 11pt &quot;Segoe UI&quot;;</string>
        <string>NOT CONNECTED !!!</string>
       </property>
      </widget>
-     <widget class="QLabel" name="baundLabel">
+     <widget class="QLabel" name="baudLabel">
       <property name="geometry">
        <rect>
         <x>10</x>
